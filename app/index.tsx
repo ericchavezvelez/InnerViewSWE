@@ -1,6 +1,17 @@
-import { Redirect } from 'expo-router';
+import { useEffect } from 'react';
+import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function Index() {
-  // TODO: check auth state here and redirect to /(tabs) if already signed in
-  return <Redirect href="/sign-in" />;
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace('/(tabs)/home');
+      } else {
+        router.replace('/sign-in');
+      }
+    });
+  }, []);
+
+  return null;
 }

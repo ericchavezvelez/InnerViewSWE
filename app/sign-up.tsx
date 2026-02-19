@@ -6,27 +6,30 @@ import {
   KeyboardAvoidingView,
   Platform,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { supabase } from '@/lib/supabase';
 
 export default function SignUpScreen() {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const inputBackground = useThemeColor({ light: '#f2f2f2', dark: '#2c2c2e' }, 'background');
   const inputColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({ light: '#8e8e93', dark: '#636366' }, 'text');
 
-  function handleSignUp() {
+  async function handleSignUp() {
     setError('');
-    if (!name || !email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
     }
@@ -38,7 +41,22 @@ export default function SignUpScreen() {
       setError('Password must be at least 6 characters.');
       return;
     }
-    // TODO: wire up real auth
+
+    setLoading(true);
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username },
+      },
+    });
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
     router.replace('/(tabs)/home');
   }
 
@@ -55,10 +73,11 @@ export default function SignUpScreen() {
         <View style={styles.form}>
           <TextInput
             style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
-            placeholder="Full Name"
+            placeholder="Username"
             placeholderTextColor={placeholderColor}
-            value={name}
-            onChangeText={setName}
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
             autoCorrect={false}
           />
           <TextInput
@@ -90,8 +109,12 @@ export default function SignUpScreen() {
 
           {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
 
-          <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-            <ThemedText style={styles.buttonText}>Create Account</ThemedText>
+          <TouchableOpacity style={styles.button} onPress={handleSignUp} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <ThemedText style={styles.buttonText}>Create Account</ThemedText>
+            )}
           </TouchableOpacity>
         </View>
 

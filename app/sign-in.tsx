@@ -6,29 +6,41 @@ import {
   KeyboardAvoidingView,
   Platform,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { supabase } from '@/lib/supabase';
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const inputBackground = useThemeColor({ light: '#f2f2f2', dark: '#2c2c2e' }, 'background');
   const inputColor = useThemeColor({}, 'text');
   const placeholderColor = useThemeColor({ light: '#8e8e93', dark: '#636366' }, 'text');
 
-  function handleSignIn() {
+  async function handleSignIn() {
     setError('');
     if (!email || !password) {
       setError('Please fill in all fields.');
       return;
     }
-    // TODO: wire up real auth
+
+    setLoading(true);
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+
     router.replace('/(tabs)/home');
   }
 
@@ -64,8 +76,12 @@ export default function SignInScreen() {
 
           {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
 
-          <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-            <ThemedText style={styles.buttonText}>Sign In</ThemedText>
+          <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <ThemedText style={styles.buttonText}>Sign In</ThemedText>
+            )}
           </TouchableOpacity>
         </View>
 
