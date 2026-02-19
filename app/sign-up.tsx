@@ -97,6 +97,8 @@ export default function SignUpScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
           />
           <TextInput
             style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
@@ -105,6 +107,8 @@ export default function SignUpScreen() {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
           {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}

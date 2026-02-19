@@ -72,6 +72,8 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
           {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
