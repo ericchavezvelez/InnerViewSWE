@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -6,8 +7,17 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function HomeScreen() {
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUsername(session?.user?.user_metadata?.username ?? '');
+    });
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,7 +28,7 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Welcome, {username}!</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
