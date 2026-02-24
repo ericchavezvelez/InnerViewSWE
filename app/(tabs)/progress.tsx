@@ -1,27 +1,76 @@
+import { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { supabase } from '@/lib/supabase';
 
-const BEST_TOPICS = ['HashMaps', 'Arrays', 'Strings'];
-const WORST_TOPICS = ['DFS', 'Heaps', 'LinkedLists'];
+type TopicStat = { topic: string; correct: number; total: number };
 
 export default function ProgressScreen() {
+  const [correctCount, setCorrectCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [bestTopics, setBestTopics] = useState<TopicStat[]>([]);
+  const [worstTopics, setWorstTopics] = useState<TopicStat[]>([]);
+
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
+
+  // Refetches and recomputes all stats every time the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.user.id) return;
+
+        supabase
+          .from('user_answers')
+          .select('topic, is_correct')
+          .eq('user_id', session.user.id)
+          .then(({ data }) => {
+            if (!data || data.length === 0) return;
+
+            const correct = data.filter((r) => r.is_correct).length;
+            setCorrectCount(correct);
+            setTotalCount(data.length);
+
+            // Group answers by topic and compute per-topic accuracy
+            const statsMap: Record<string, { correct: number; total: number }> = {};
+            for (const row of data) {
+              if (!statsMap[row.topic]) statsMap[row.topic] = { correct: 0, total: 0 };
+              statsMap[row.topic].total += 1;
+              if (row.is_correct) statsMap[row.topic].correct += 1;
+            }
+
+            // Sort by accuracy desc — top 3 = best, bottom 3 = worst
+            const sorted = Object.entries(statsMap)
+              .map(([topic, s]) => ({ topic, ...s }))
+              .sort((a, b) => b.correct / b.total - a.correct / a.total);
+
+            setBestTopics(sorted.slice(0, 3));
+            setWorstTopics(sorted.slice(-3).reverse());
+          });
+      });
+    }, [])
+  );
+
+  // Converts a topic's correct/total into a rounded percentage string
+  function formatAccuracy(stat: TopicStat): string {
+    return `${Math.round((stat.correct / stat.total) * 100)}%`;
+  }
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Progress</ThemedText>
 
-        {/* Donut chart placeholder */}
+        {/* Donut chart */}
         <View style={[styles.chartContainer, { backgroundColor: cardBackground }]}>
           <View style={styles.chartRing}>
             <View style={[styles.chartInner, { backgroundColor: cardBackground }]} />
-            <ThemedText style={styles.chartScore}>100</ThemedText>
-            <ThemedText style={styles.chartDivider}>/ 120</ThemedText>
+            <ThemedText style={styles.chartScore}>{correctCount}</ThemedText>
+            <ThemedText style={styles.chartDivider}>/ {totalCount}</ThemedText>
           </View>
           <ThemedText style={styles.chartLabel}>Overall Score</ThemedText>
         </View>
@@ -30,15 +79,21 @@ export default function ProgressScreen() {
         <View style={styles.section}>
           <ThemedText type="subtitle">Best Topics</ThemedText>
           <View style={styles.topicList}>
-            {BEST_TOPICS.map((topic) => (
-              <TouchableOpacity
-                key={topic}
-                style={[styles.topicRow, { backgroundColor: topicBackground }]}
-                onPress={() => {}}>
-                <ThemedText style={styles.topicText}>{topic}</ThemedText>
-                <ThemedText style={styles.chevron}>›</ThemedText>
-              </TouchableOpacity>
-            ))}
+            {bestTopics.length === 0 ? (
+              <ThemedText style={styles.emptyText}>
+                Play some questions to see your best topics.
+              </ThemedText>
+            ) : (
+              bestTopics.map((stat) => (
+                <TouchableOpacity
+                  key={stat.topic}
+                  style={[styles.topicRow, { backgroundColor: topicBackground }]}
+                  onPress={() => {}}>
+                  <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
+                  <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </View>
 
@@ -46,15 +101,21 @@ export default function ProgressScreen() {
         <View style={styles.section}>
           <ThemedText type="subtitle">Worst Topics</ThemedText>
           <View style={styles.topicList}>
-            {WORST_TOPICS.map((topic) => (
-              <TouchableOpacity
-                key={topic}
-                style={[styles.topicRow, { backgroundColor: topicBackground }]}
-                onPress={() => {}}>
-                <ThemedText style={styles.topicText}>{topic}</ThemedText>
-                <ThemedText style={styles.chevron}>›</ThemedText>
-              </TouchableOpacity>
-            ))}
+            {worstTopics.length === 0 ? (
+              <ThemedText style={styles.emptyText}>
+                Play some questions to see your worst topics.
+              </ThemedText>
+            ) : (
+              worstTopics.map((stat) => (
+                <TouchableOpacity
+                  key={stat.topic}
+                  style={[styles.topicRow, { backgroundColor: topicBackground }]}
+                  onPress={() => {}}>
+                  <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
+                  <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
+                </TouchableOpacity>
+              ))
+            )}
           </View>
         </View>
 
@@ -101,6 +162,7 @@ const styles = StyleSheet.create({
   chartScore: {
     fontSize: 22,
     fontWeight: '700',
+    lineHeight: 28,
   },
   chartDivider: {
     fontSize: 12,
@@ -129,9 +191,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  chevron: {
-    fontSize: 20,
-    opacity: 0.4,
+  topicAccuracy: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0a7ea4',
+  },
+  emptyText: {
+    fontSize: 14,
+    opacity: 0.5,
+    fontStyle: 'italic',
   },
   allTopicsButton: {
     borderWidth: 1,

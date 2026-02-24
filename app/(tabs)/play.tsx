@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { supabase } from '@/lib/supabase';
 
 type Question = {
   id: string;
@@ -77,6 +77,7 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function PlayScreen() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -86,11 +87,18 @@ export default function PlayScreen() {
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const answerBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
 
+  // Fetches the current user's ID once on mount so answers can be saved to Supabase
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user.id ?? null);
+    });
+  }, []);
+
   const question = QUESTIONS[currentIndex];
   const isAnswered = selectedIndex !== null;
   const isLastQuestion = currentIndex === QUESTIONS.length - 1;
 
-  // Returns the background color of an answer row based on whether it's correct, wrong, or unanswered
+  // Green for correct, red for wrong, default otherwise
   function getAnswerBackground(index: number) {
     if (!isAnswered) return answerBackground;
     if (index === question.correctIndex) return '#e8f5e9';
@@ -98,7 +106,7 @@ export default function PlayScreen() {
     return answerBackground;
   }
 
-  // Returns a green or red border style for the answer row after answering
+  // Adds a colored border to the correct and selected answers after submission
   function getAnswerBorder(index: number) {
     if (!isAnswered) return {};
     if (index === question.correctIndex) return { borderWidth: 1.5, borderColor: '#4caf50' };
@@ -106,14 +114,14 @@ export default function PlayScreen() {
     return {};
   }
 
-  // Returns the border color of the A/B/C/D circle — transparent when it gets a solid fill
+  // Hides the circle border when it's being filled with green/red so colors don't mix
   function getIndexCircleColor(index: number) {
     if (!isAnswered) return '#0a7ea4';
     if (index === question.correctIndex || index === selectedIndex) return 'transparent';
     return '#0a7ea4';
   }
 
-  // Returns the fill color of the A/B/C/D circle — green for correct, red for wrong
+  // Fills the answer index circle green for correct, red for wrong
   function getIndexFill(index: number) {
     if (!isAnswered) return 'transparent';
     if (index === question.correctIndex) return '#4caf50';
@@ -121,18 +129,20 @@ export default function PlayScreen() {
     return 'transparent';
   }
 
-  // Returns white text when the circle is filled, blue otherwise
+  // Switches the letter text to white when its circle is filled so it stays readable
   function getIndexTextColor(index: number) {
     if (!isAnswered) return '#0a7ea4';
     if (index === question.correctIndex || index === selectedIndex) return '#fff';
     return '#0a7ea4';
   }
 
-  // Called when the user taps an answer — locks in selection, increments score or records wrong answer
-  function handleSelectAnswer(index: number) {
+  // Records the selected answer, updates score/wrong list, and saves the result to Supabase
+  async function handleSelectAnswer(index: number) {
     if (isAnswered) return;
     setSelectedIndex(index);
-    if (index === question.correctIndex) {
+    const isCorrect = index === question.correctIndex;
+
+    if (isCorrect) {
       setScore((s) => s + 1);
     } else {
       setWrongAnswers((prev) => [
@@ -145,12 +155,19 @@ export default function PlayScreen() {
         },
       ]);
     }
+
+    if (userId) {
+      await supabase.from('user_answers').insert({
+        user_id: userId,
+        topic: question.topic,
+        is_correct: isCorrect,
+      });
+    }
   }
 
-  // Advances to the next question, or ends the session and saves wrong answers to AsyncStorage
-  async function handleNext() {
+  // Advances to the next question or ends the session on the last one
+  function handleNext() {
     if (isLastQuestion) {
-      await AsyncStorage.setItem('wrongAnswers', JSON.stringify(wrongAnswers));
       setSessionComplete(true);
     } else {
       setCurrentIndex((i) => i + 1);
@@ -158,7 +175,7 @@ export default function PlayScreen() {
     }
   }
 
-  // Resets all session state back to the beginning
+  // Resets all session state to restart from question 1
   function handlePlayAgain() {
     setCurrentIndex(0);
     setSelectedIndex(null);
