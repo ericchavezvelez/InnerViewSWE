@@ -28,9 +28,28 @@ type TopicStats = Record<string, { correct: number; total: number }>;
 export default function HomeScreen() {
   const [username, setUsername] = useState('');
   const [topicStats, setTopicStats] = useState<TopicStats>({});
+  const [streak, setStreak] = useState(0);
 
   const circleBorder = useThemeColor({ light: '#d1d1d6', dark: '#3a3a3c' }, 'background');
   const streakBackground = useThemeColor({ light: '#fff3e0', dark: '#2c1a00' }, 'background');
+
+  // Counts consecutive days with at least one answer, ending today or yesterday
+  function computeStreak(createdAts: string[]): number {
+    if (createdAts.length === 0) return 0;
+    const uniqueDays = new Set(
+      createdAts.map((ts) => new Date(ts).toLocaleDateString('en-CA'))
+    );
+    const checkDate = new Date();
+    if (!uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    let count = 0;
+    while (uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
+      count += 1;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+    return count;
+  }
 
   // Refetches user data every time the tab comes into focus
   useFocusEffect(
@@ -41,7 +60,7 @@ export default function HomeScreen() {
 
         supabase
           .from('user_answers')
-          .select('topic, is_correct')
+          .select('topic, is_correct, created_at')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (!data) return;
@@ -53,6 +72,7 @@ export default function HomeScreen() {
               if (row.is_correct) stats[category].correct += 1;
             }
             setTopicStats(stats);
+            setStreak(computeStreak(data.map((r) => r.created_at)));
           });
       });
     }, [])
@@ -78,7 +98,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <ThemedText type="title">Welcome back, {username}!</ThemedText>
           <View style={[styles.streakBadge, { backgroundColor: streakBackground }]}>
-            <ThemedText style={styles.streakText}>🔥 7 Day Streak</ThemedText>
+            <ThemedText style={styles.streakText}>🔥 {streak} Day Streak</ThemedText>
           </View>
         </View>
 
