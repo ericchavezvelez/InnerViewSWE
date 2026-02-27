@@ -86,6 +86,8 @@ export default function PlayScreen() {
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const answerBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
+  const correctBackground = useThemeColor({ light: '#e8f5e9', dark: '#1b3a1e' }, 'background');
+  const wrongBackground = useThemeColor({ light: '#fdecea', dark: '#3a1a1a' }, 'background');
 
   // Fetches the current user's ID once on mount so answers can be saved to Supabase
   useEffect(() => {
@@ -101,8 +103,8 @@ export default function PlayScreen() {
   // Green for correct, red for wrong, default otherwise
   function getAnswerBackground(index: number) {
     if (!isAnswered) return answerBackground;
-    if (index === question.correctIndex) return '#e8f5e9';
-    if (index === selectedIndex) return '#fdecea';
+    if (index === question.correctIndex) return correctBackground;
+    if (index === selectedIndex) return wrongBackground;
     return answerBackground;
   }
 
