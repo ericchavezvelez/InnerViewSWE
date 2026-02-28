@@ -67,10 +67,16 @@ export default function ProgressScreen() {
 
         {/* Donut chart */}
         <View style={[styles.chartContainer, { backgroundColor: cardBackground }]}>
-          <View style={styles.chartRing}>
+          <View style={[styles.chartRing, totalCount === 0 && styles.chartRingEmpty]}>
             <View style={[styles.chartInner, { backgroundColor: cardBackground }]} />
-            <ThemedText style={styles.chartScore}>{correctCount}</ThemedText>
-            <ThemedText style={styles.chartDivider}>/ {totalCount}</ThemedText>
+            {totalCount === 0 ? (
+              <ThemedText style={styles.chartEmptyText}>Play to{'\n'}see stats</ThemedText>
+            ) : (
+              <>
+                <ThemedText style={styles.chartScore}>{correctCount}</ThemedText>
+                <ThemedText style={styles.chartDivider}>/ {totalCount}</ThemedText>
+              </>
+            )}
           </View>
           <ThemedText style={styles.chartLabel}>Overall Score</ThemedText>
         </View>
@@ -158,6 +164,16 @@ const styles = StyleSheet.create({
     width: 128,
     height: 128,
     borderRadius: 64,
+  },
+  chartRingEmpty: {
+    borderColor: '#8e8e93',
+  },
+  chartEmptyText: {
+    fontSize: 13,
+    fontWeight: '600',
+    opacity: 0.5,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   chartScore: {
     fontSize: 22,

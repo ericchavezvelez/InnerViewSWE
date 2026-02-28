@@ -98,7 +98,9 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <ThemedText type="title">Welcome back, {username}!</ThemedText>
           <View style={[styles.streakBadge, { backgroundColor: streakBackground }]}>
-            <ThemedText style={styles.streakText}>🔥 {streak} Day Streak</ThemedText>
+            <ThemedText style={styles.streakText}>
+              {streak === 0 ? '👋 Start your streak!' : `🔥 ${streak} Day Streak`}
+            </ThemedText>
           </View>
         </View>
 
