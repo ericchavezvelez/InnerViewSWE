@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -29,6 +29,7 @@ export default function HomeScreen() {
   const [username, setUsername] = useState('');
   const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [streak, setStreak] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const circleBorder = useThemeColor({ light: '#d1d1d6', dark: '#3a3a3c' }, 'background');
   const streakBackground = useThemeColor({ light: '#fff3e0', dark: '#2c1a00' }, 'background');
@@ -54,25 +55,28 @@ export default function HomeScreen() {
   // Refetches user data every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       supabase.auth.getSession().then(({ data: { session } }) => {
         setUsername(session?.user?.user_metadata?.username ?? '');
-        if (!session?.user.id) return;
+        if (!session?.user.id) { setLoading(false); return; }
 
         supabase
           .from('user_answers')
           .select('topic, is_correct, created_at')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
-            if (!data) return;
-            const stats: TopicStats = {};
-            for (const row of data) {
-              const category = TOPIC_TO_CATEGORY[row.topic] ?? row.topic;
-              if (!stats[category]) stats[category] = { correct: 0, total: 0 };
-              stats[category].total += 1;
-              if (row.is_correct) stats[category].correct += 1;
+            if (data) {
+              const stats: TopicStats = {};
+              for (const row of data) {
+                const category = TOPIC_TO_CATEGORY[row.topic] ?? row.topic;
+                if (!stats[category]) stats[category] = { correct: 0, total: 0 };
+                stats[category].total += 1;
+                if (row.is_correct) stats[category].correct += 1;
+              }
+              setTopicStats(stats);
+              setStreak(computeStreak(data.map((r) => r.created_at)));
             }
-            setTopicStats(stats);
-            setStreak(computeStreak(data.map((r) => r.created_at)));
+            setLoading(false);
           });
       });
     }, [])
@@ -90,6 +94,14 @@ export default function HomeScreen() {
     const stats = topicStats[label];
     if (!stats || stats.total === 0) return '—';
     return `${Math.round((stats.correct / stats.total) * 100)}%`;
+  }
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <ActivityIndicator style={styles.spinner} size="large" color="#0a7ea4" />
+      </ThemedView>
+    );
   }
 
   return (
@@ -121,6 +133,9 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  spinner: {
     flex: 1,
   },
   content: {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -14,6 +14,7 @@ export default function ProgressScreen() {
   const [totalCount, setTotalCount] = useState(0);
   const [bestTopics, setBestTopics] = useState<TopicStat[]>([]);
   const [worstTopics, setWorstTopics] = useState<TopicStat[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
@@ -21,35 +22,37 @@ export default function ProgressScreen() {
   // Refetches and recomputes all stats every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
+      setLoading(true);
       supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session?.user.id) return;
+        if (!session?.user.id) { setLoading(false); return; }
 
         supabase
           .from('user_answers')
           .select('topic, is_correct')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
-            if (!data || data.length === 0) return;
+            if (data && data.length > 0) {
+              const correct = data.filter((r) => r.is_correct).length;
+              setCorrectCount(correct);
+              setTotalCount(data.length);
 
-            const correct = data.filter((r) => r.is_correct).length;
-            setCorrectCount(correct);
-            setTotalCount(data.length);
+              // Group answers by topic and compute per-topic accuracy
+              const statsMap: Record<string, { correct: number; total: number }> = {};
+              for (const row of data) {
+                if (!statsMap[row.topic]) statsMap[row.topic] = { correct: 0, total: 0 };
+                statsMap[row.topic].total += 1;
+                if (row.is_correct) statsMap[row.topic].correct += 1;
+              }
 
-            // Group answers by topic and compute per-topic accuracy
-            const statsMap: Record<string, { correct: number; total: number }> = {};
-            for (const row of data) {
-              if (!statsMap[row.topic]) statsMap[row.topic] = { correct: 0, total: 0 };
-              statsMap[row.topic].total += 1;
-              if (row.is_correct) statsMap[row.topic].correct += 1;
+              // Sort by accuracy desc — top 3 = best, bottom 3 = worst
+              const sorted = Object.entries(statsMap)
+                .map(([topic, s]) => ({ topic, ...s }))
+                .sort((a, b) => b.correct / b.total - a.correct / a.total);
+
+              setBestTopics(sorted.slice(0, 3));
+              setWorstTopics(sorted.slice(-3).reverse());
             }
-
-            // Sort by accuracy desc — top 3 = best, bottom 3 = worst
-            const sorted = Object.entries(statsMap)
-              .map(([topic, s]) => ({ topic, ...s }))
-              .sort((a, b) => b.correct / b.total - a.correct / a.total);
-
-            setBestTopics(sorted.slice(0, 3));
-            setWorstTopics(sorted.slice(-3).reverse());
+            setLoading(false);
           });
       });
     }, [])
@@ -58,6 +61,14 @@ export default function ProgressScreen() {
   // Converts a topic's correct/total into a rounded percentage string
   function formatAccuracy(stat: TopicStat): string {
     return `${Math.round((stat.correct / stat.total) * 100)}%`;
+  }
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <ActivityIndicator style={styles.spinner} size="large" color="#0a7ea4" />
+      </ThemedView>
+    );
   }
 
   return (
@@ -136,6 +147,9 @@ export default function ProgressScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  spinner: {
     flex: 1,
   },
   content: {
