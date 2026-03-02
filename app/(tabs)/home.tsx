@@ -33,6 +33,7 @@ export default function HomeScreen() {
 
   const circleBorder = useThemeColor({ light: '#d1d1d6', dark: '#3a3a3c' }, 'background');
   const streakBackground = useThemeColor({ light: '#fff3e0', dark: '#2c1a00' }, 'background');
+  const neutralBadge = useThemeColor({ light: '#f2f2f7', dark: '#2c2c2e' }, 'background');
 
   // Counts consecutive days with at least one answer, ending today or yesterday
   function computeStreak(createdAts: string[]): number {
@@ -109,7 +110,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Welcome back, {username}!</ThemedText>
-          <View style={[styles.streakBadge, { backgroundColor: streakBackground }]}>
+          <View style={[styles.streakBadge, { backgroundColor: streak === 0 ? neutralBadge : streakBackground }]}>
             <ThemedText style={styles.streakText}>
               {streak === 0 ? '👋 Start your streak!' : `🔥 ${streak} Day Streak`}
             </ThemedText>
