@@ -137,8 +137,13 @@ export default function ProgressScreen() {
         </View>
 
         {/* All Topics */}
-        <TouchableOpacity style={styles.allTopicsButton} onPress={() => {}}>
-          <ThemedText style={styles.allTopicsText}>All Topics</ThemedText>
+        <TouchableOpacity
+          style={[styles.allTopicsButton, totalCount === 0 && styles.allTopicsDisabled]}
+          onPress={() => {}}
+          disabled={totalCount === 0}>
+          <ThemedText style={[styles.allTopicsText, totalCount === 0 && styles.allTopicsTextDisabled]}>
+            All Topics
+          </ThemedText>
         </TouchableOpacity>
       </ScrollView>
     </ThemedView>
@@ -242,5 +247,12 @@ const styles = StyleSheet.create({
     color: '#0a7ea4',
     fontWeight: '600',
     fontSize: 16,
+  },
+  allTopicsDisabled: {
+    borderColor: '#8e8e93',
+    opacity: 0.4,
+  },
+  allTopicsTextDisabled: {
+    color: '#8e8e93',
   },
 });
