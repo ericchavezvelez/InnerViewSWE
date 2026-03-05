@@ -222,8 +222,8 @@ export default function PlayScreen() {
           <View style={[styles.badge, styles.typeBadge]}>
             <ThemedText style={styles.badgeText}>Multiple Choice</ThemedText>
           </View>
-          <View style={[styles.badge, styles.difficultyBadge]}>
-            <ThemedText style={styles.badgeText}>{question.difficulty}</ThemedText>
+          <View style={[styles.badge, difficultyStyles[question.difficulty].badge]}>
+            <ThemedText style={difficultyStyles[question.difficulty].text}>{question.difficulty}</ThemedText>
           </View>
           <View style={styles.progressBadge}>
             <ThemedText style={styles.progressText}>
@@ -284,6 +284,12 @@ export default function PlayScreen() {
   );
 }
 
+const difficultyStyles: Record<string, { badge: object; text: object }> = {
+  SWE1: { badge: { backgroundColor: '#e8f5e9' }, text: { fontSize: 13, fontWeight: '600', color: '#4caf50' } },
+  SWE2: { badge: { backgroundColor: '#fff3e0' }, text: { fontSize: 13, fontWeight: '600', color: '#ff9500' } },
+  SWE3: { badge: { backgroundColor: '#fdecea' }, text: { fontSize: 13, fontWeight: '600', color: '#f44336' } },
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -306,9 +312,6 @@ const styles = StyleSheet.create({
   },
   typeBadge: {
     backgroundColor: '#e8f4f8',
-  },
-  difficultyBadge: {
-    backgroundColor: '#e8f5e9',
   },
   badgeText: {
     fontSize: 13,
