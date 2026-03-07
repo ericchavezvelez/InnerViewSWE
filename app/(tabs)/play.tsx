@@ -76,8 +76,18 @@ const QUESTIONS: Question[] = [
   },
 ];
 
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export default function PlayScreen() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>(() => shuffle(QUESTIONS));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -96,9 +106,9 @@ export default function PlayScreen() {
     });
   }, []);
 
-  const question = QUESTIONS[currentIndex];
+  const question = questions[currentIndex];
   const isAnswered = selectedIndex !== null;
-  const isLastQuestion = currentIndex === QUESTIONS.length - 1;
+  const isLastQuestion = currentIndex === questions.length - 1;
 
   // Green for correct, red for wrong, default otherwise
   function getAnswerBackground(index: number) {
@@ -177,8 +187,9 @@ export default function PlayScreen() {
     }
   }
 
-  // Resets all session state to restart from question 1
+  // Resets all session state and reshuffles questions for a fresh round
   function handlePlayAgain() {
+    setQuestions(shuffle(QUESTIONS));
     setCurrentIndex(0);
     setSelectedIndex(null);
     setScore(0);
@@ -194,7 +205,7 @@ export default function PlayScreen() {
 
           <View style={styles.scoreCard}>
             <ThemedText style={styles.scoreNumber}>
-              {score} / {QUESTIONS.length}
+              {score} / {questions.length}
             </ThemedText>
             <ThemedText style={styles.scoreLabel}>Correct</ThemedText>
           </View>
@@ -227,7 +238,7 @@ export default function PlayScreen() {
           </View>
           <View style={styles.progressBadge}>
             <ThemedText style={styles.progressText}>
-              {currentIndex + 1} / {QUESTIONS.length}
+              {currentIndex + 1} / {questions.length}
             </ThemedText>
           </View>
         </View>
