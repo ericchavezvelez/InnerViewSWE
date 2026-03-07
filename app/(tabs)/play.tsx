@@ -204,7 +204,7 @@ export default function PlayScreen() {
           <ThemedText type="title">Session Complete</ThemedText>
 
           <View style={styles.scoreCard}>
-            <ThemedText style={styles.scoreNumber}>
+            <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
               {score} / {questions.length}
             </ThemedText>
             <ThemedText style={styles.scoreLabel}>Correct</ThemedText>
