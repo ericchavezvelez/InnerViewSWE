@@ -23,6 +23,10 @@ export default function ProgressScreen() {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
+      setCorrectCount(0);
+      setTotalCount(0);
+      setBestTopics([]);
+      setWorstTopics([]);
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.user.id) { setLoading(false); return; }
 
