@@ -118,27 +118,23 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        {/* Worst Topics */}
+        {/* Worst Topics — hidden if all topics share the same accuracy as the best */}
+        {worstTopics.length > 0 && worstTopics[0].correct / worstTopics[0].total !== bestTopics[0]?.correct / bestTopics[0]?.total && (
         <View style={styles.section}>
           <ThemedText type="subtitle">Worst Topics</ThemedText>
           <View style={styles.topicList}>
-            {worstTopics.length === 0 ? (
-              <ThemedText style={styles.emptyText}>
-                Play some questions to see your worst topics.
-              </ThemedText>
-            ) : (
-              worstTopics.map((stat) => (
-                <TouchableOpacity
-                  key={stat.topic}
-                  style={[styles.topicRow, { backgroundColor: topicBackground }]}
-                  onPress={() => {}}>
-                  <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
-                  <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
-                </TouchableOpacity>
-              ))
-            )}
+            {worstTopics.map((stat) => (
+              <TouchableOpacity
+                key={stat.topic}
+                style={[styles.topicRow, { backgroundColor: topicBackground }]}
+                onPress={() => {}}>
+                <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
+                <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
+        )}
 
         {/* All Topics */}
         <TouchableOpacity

@@ -57,6 +57,8 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
+      setTopicStats({});
+      setStreak(0);
       supabase.auth.getSession().then(({ data: { session } }) => {
         setUsername(session?.user?.user_metadata?.username ?? '');
         if (!session?.user.id) { setLoading(false); return; }
