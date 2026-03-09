@@ -201,7 +201,9 @@ export default function PlayScreen() {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.summaryContent}>
-          <ThemedText type="title">Session Complete</ThemedText>
+          <ThemedText type="title">
+            {score === questions.length ? 'Perfect! 🎉' : 'Session Complete'}
+          </ThemedText>
 
           <View style={styles.scoreCard}>
             <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
