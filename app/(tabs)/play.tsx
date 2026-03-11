@@ -85,9 +85,16 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// Shuffles a question's answers and updates correctIndex to match the new position
+function shuffleAnswers(q: Question): Question {
+  const correct = q.answers[q.correctIndex];
+  const answers = shuffle(q.answers);
+  return { ...q, answers, correctIndex: answers.indexOf(correct) };
+}
+
 export default function PlayScreen() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<Question[]>(() => shuffle(QUESTIONS));
+  const [questions, setQuestions] = useState<Question[]>(() => shuffle(QUESTIONS).map(shuffleAnswers));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -189,7 +196,7 @@ export default function PlayScreen() {
 
   // Resets all session state and reshuffles questions for a fresh round
   function handlePlayAgain() {
-    setQuestions(shuffle(QUESTIONS));
+    setQuestions(shuffle(QUESTIONS).map(shuffleAnswers));
     setCurrentIndex(0);
     setSelectedIndex(null);
     setScore(0);
