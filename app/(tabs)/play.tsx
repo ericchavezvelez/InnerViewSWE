@@ -92,9 +92,12 @@ function shuffleAnswers(q: Question): Question {
   return { ...q, answers, correctIndex: answers.indexOf(correct) };
 }
 
+const SESSION_SIZES = [5, 10, 15];
+
 export default function PlayScreen() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<Question[]>(() => shuffle(QUESTIONS).map(shuffleAnswers));
+  const [sessionSize, setSessionSize] = useState<number | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -194,14 +197,43 @@ export default function PlayScreen() {
     }
   }
 
-  // Resets all session state and reshuffles questions for a fresh round
-  function handlePlayAgain() {
-    setQuestions(shuffle(QUESTIONS).map(shuffleAnswers));
+  // Initializes a new session with the chosen number of questions
+  function handleStartSession(size: number) {
+    setSessionSize(size);
+    setQuestions(shuffle(QUESTIONS).slice(0, Math.min(size, QUESTIONS.length)).map(shuffleAnswers));
     setCurrentIndex(0);
     setSelectedIndex(null);
     setScore(0);
     setWrongAnswers([]);
     setSessionComplete(false);
+  }
+
+  // Returns to the size picker so the user can start a fresh session
+  function handlePlayAgain() {
+    setSessionSize(null);
+    setQuestions([]);
+  }
+
+  if (sessionSize === null) {
+    return (
+      <ThemedView style={styles.container}>
+        <View style={styles.pickerContent}>
+          <ThemedText type="title">Let's Play</ThemedText>
+          <ThemedText style={styles.pickerSubtitle}>How many questions?</ThemedText>
+          <View style={styles.pickerButtons}>
+            {SESSION_SIZES.map((size) => (
+              <TouchableOpacity
+                key={size}
+                style={styles.pickerButton}
+                onPress={() => handleStartSession(size)}>
+                <ThemedText style={styles.pickerButtonNumber}>{size}</ThemedText>
+                <ThemedText style={styles.pickerButtonLabel}>questions</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </ThemedView>
+    );
   }
 
   if (sessionComplete) {
@@ -439,5 +471,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
+  },
+  pickerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    gap: 28,
+  },
+  pickerSubtitle: {
+    fontSize: 16,
+    opacity: 0.5,
+    fontWeight: '500',
+  },
+  pickerButtons: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  pickerButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 24,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#0a7ea4',
+    gap: 4,
+  },
+  pickerButtonNumber: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#0a7ea4',
+    lineHeight: 36,
+  },
+  pickerButtonLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#0a7ea4',
+    opacity: 0.7,
   },
 });
