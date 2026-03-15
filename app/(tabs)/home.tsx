@@ -7,7 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 
-const PROGRESS_CIRCLES = ['Algorithms', 'Data Structures', 'Lessons', 'Big O'];
+const PROGRESS_CIRCLES = ['Algorithms', 'Data Structures', 'Big O'];
 
 // Maps each question topic to one of the 4 home circle categories
 const TOPIC_TO_CATEGORY: Record<string, string> = {
@@ -162,14 +162,13 @@ const styles = StyleSheet.create({
   },
   grid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 24,
+    gap: 12,
     justifyContent: 'center',
   },
   circleItem: {
+    flex: 1,
     alignItems: 'center',
     gap: 10,
-    width: '42%',
   },
   circle: {
     width: 110,
