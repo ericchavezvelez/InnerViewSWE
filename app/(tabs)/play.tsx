@@ -339,7 +339,7 @@ export default function PlayScreen() {
   if (sessionComplete) {
     return (
       <ThemedView style={styles.container}>
-        <View style={styles.summaryContent}>
+        <ScrollView contentContainerStyle={styles.summaryContent}>
           <ThemedText type="title">
             {score === questions.length ? 'Perfect! 🎉' : 'Session Complete'}
           </ThemedText>
@@ -352,16 +352,27 @@ export default function PlayScreen() {
           </View>
 
           {wrongAnswers.length > 0 && (
-            <ThemedText style={styles.missedLabel}>
-              {wrongAnswers.length} question{wrongAnswers.length > 1 ? 's' : ''} missed — review
-              them in the Progress tab.
-            </ThemedText>
+            <View style={styles.missedSection}>
+              <ThemedText style={styles.missedHeading}>Review</ThemedText>
+              {wrongAnswers.map((w, i) => (
+                <View key={i} style={[styles.missedCard, { backgroundColor: cardBackground }]}>
+                  <ThemedText style={styles.missedTopic}>{w.topic}</ThemedText>
+                  <ThemedText style={styles.missedQuestion}>{w.question}</ThemedText>
+                  <View style={styles.missedRow}>
+                    <ThemedText style={styles.missedWrong}>✗ {w.selected}</ThemedText>
+                  </View>
+                  <View style={styles.missedRow}>
+                    <ThemedText style={styles.missedCorrect}>✓ {w.correct}</ThemedText>
+                  </View>
+                </View>
+              ))}
+            </View>
           )}
 
           <TouchableOpacity style={styles.playAgainButton} onPress={handlePlayAgain}>
             <ThemedText style={styles.playAgainText}>Play Again</ThemedText>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </ThemedView>
     );
   }
@@ -534,10 +545,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   summaryContent: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
+    paddingTop: 64,
+    paddingBottom: 32,
     gap: 28,
   },
   scoreCard: {
@@ -554,10 +565,43 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     fontWeight: '600',
   },
-  missedLabel: {
+  missedSection: {
+    width: '100%',
+    gap: 12,
+  },
+  missedHeading: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  missedCard: {
+    borderRadius: 14,
+    padding: 16,
+    gap: 8,
+    width: '100%',
+  },
+  missedTopic: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0a7ea4',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  missedQuestion: {
     fontSize: 14,
-    opacity: 0.6,
-    textAlign: 'center',
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  missedRow: {
+    flexDirection: 'row',
+  },
+  missedWrong: {
+    fontSize: 13,
+    color: '#f44336',
+    lineHeight: 20,
+  },
+  missedCorrect: {
+    fontSize: 13,
+    color: '#4caf50',
     lineHeight: 20,
   },
   playAgainButton: {
