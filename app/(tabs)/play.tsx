@@ -348,7 +348,9 @@ export default function PlayScreen() {
             <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
               {score} / {questions.length}
             </ThemedText>
-            <ThemedText style={styles.scoreLabel}>Correct</ThemedText>
+            <ThemedText style={styles.scoreLabel}>
+              {Math.round((score / questions.length) * 100)}% Correct
+            </ThemedText>
           </View>
 
           {wrongAnswers.length > 0 && (
