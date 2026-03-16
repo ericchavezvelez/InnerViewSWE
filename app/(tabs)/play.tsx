@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -209,6 +216,22 @@ export default function PlayScreen() {
   const correctBackground = useThemeColor({ light: '#e8f5e9', dark: '#1b3a1e' }, 'background');
   const wrongBackground = useThemeColor({ light: '#fdecea', dark: '#3a1a1a' }, 'background');
 
+  const celebrationScale = useSharedValue(1);
+  const celebrationStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: celebrationScale.value }],
+  }));
+
+  // Bounces the perfect score title when a flawless session ends
+  useEffect(() => {
+    if (sessionComplete && score === questions.length && questions.length > 0) {
+      celebrationScale.value = withSequence(
+        withTiming(0.8, { duration: 80 }),
+        withSpring(1.15, { damping: 5, stiffness: 200 }),
+        withSpring(1, { damping: 10 }),
+      );
+    }
+  }, [sessionComplete]);
+
   // Fetches the current user's ID once on mount so answers can be saved to Supabase
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -340,9 +363,11 @@ export default function PlayScreen() {
     return (
       <ThemedView style={styles.container}>
         <ScrollView contentContainerStyle={styles.summaryContent}>
-          <ThemedText type="title">
-            {score === questions.length ? 'Perfect! 🎉' : 'Session Complete'}
-          </ThemedText>
+          <Animated.View style={score === questions.length ? celebrationStyle : undefined}>
+            <ThemedText type="title">
+              {score === questions.length ? 'Perfect! 🎉' : 'Session Complete'}
+            </ThemedText>
+          </Animated.View>
 
           <View style={styles.scoreCard}>
             <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
