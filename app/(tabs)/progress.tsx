@@ -140,7 +140,7 @@ export default function ProgressScreen() {
         {/* All Topics */}
         <TouchableOpacity
           style={[styles.allTopicsButton, totalCount === 0 && styles.allTopicsDisabled]}
-          onPress={() => {}}
+          onPress={() => router.push('/all-topics' as any)}
           disabled={totalCount === 0}>
           <ThemedText style={[styles.allTopicsText, totalCount === 0 && styles.allTopicsTextDisabled]}>
             All Topics

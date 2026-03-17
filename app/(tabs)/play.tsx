@@ -667,6 +667,16 @@ export default function PlayScreen() {
           ))}
         </View>
 
+        {/* Explanation — shown after a wrong answer */}
+        {isAnswered && selectedIndex !== question.correctIndex && (
+          <View style={styles.explanationCard}>
+            <ThemedText style={styles.explanationLabel}>✦ Why?</ThemedText>
+            <ThemedText style={styles.explanationText}>
+              AI-powered explanations are coming soon. You'll get a clear breakdown of why the correct answer is right and where the others fall short.
+            </ThemedText>
+          </View>
+        )}
+
         {/* Next Button */}
         {isAnswered && (
           <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
@@ -929,5 +939,24 @@ const styles = StyleSheet.create({
   },
   pickerButtonNumberDimmed: {
     color: '#8e8e93',
+  },
+  explanationCard: {
+    borderWidth: 1,
+    borderColor: '#0a7ea433',
+    borderRadius: 14,
+    padding: 16,
+    gap: 8,
+    backgroundColor: '#0a7ea408',
+  },
+  explanationLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0a7ea4',
+    letterSpacing: 0.4,
+  },
+  explanationText: {
+    fontSize: 14,
+    lineHeight: 21,
+    opacity: 0.6,
   },
 });
