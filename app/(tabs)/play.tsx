@@ -537,17 +537,27 @@ export default function PlayScreen() {
           </View>
 
           <View style={styles.difficultySection}>
-            <ThemedText style={styles.pickerSubtitle}>Questions</ThemedText>
+            <View style={styles.questionsSectionHeader}>
+              <ThemedText style={styles.pickerSubtitle}>Questions</ThemedText>
+              <ThemedText style={styles.availableCount}>
+                {difficulty === 'All' ? QUESTIONS.length : QUESTIONS.filter((q) => q.difficulty === difficulty).length} available
+              </ThemedText>
+            </View>
             <View style={styles.pickerButtons}>
-              {SESSION_SIZES.map((size) => (
-                <TouchableOpacity
-                  key={size}
-                  style={styles.pickerButton}
-                  onPress={() => handleStartSession(size)}>
-                  <ThemedText style={styles.pickerButtonNumber}>{size}</ThemedText>
-                  <ThemedText style={styles.pickerButtonLabel}>questions</ThemedText>
-                </TouchableOpacity>
-              ))}
+              {SESSION_SIZES.map((size) => {
+                const pool = difficulty === 'All' ? QUESTIONS.length : QUESTIONS.filter((q) => q.difficulty === difficulty).length;
+                const unavailable = size > pool;
+                return (
+                  <TouchableOpacity
+                    key={size}
+                    style={[styles.pickerButton, unavailable && styles.pickerButtonDimmed]}
+                    onPress={() => handleStartSession(size)}
+                    disabled={unavailable}>
+                    <ThemedText style={[styles.pickerButtonNumber, unavailable && styles.pickerButtonNumberDimmed]}>{size}</ThemedText>
+                    <ThemedText style={[styles.pickerButtonLabel, unavailable && styles.pickerButtonNumberDimmed]}>questions</ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </View>
@@ -902,5 +912,22 @@ const styles = StyleSheet.create({
   },
   difficultyButtonTextActive: {
     opacity: 1,
+  },
+  questionsSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  availableCount: {
+    fontSize: 13,
+    fontWeight: '500',
+    opacity: 0.4,
+  },
+  pickerButtonDimmed: {
+    borderColor: '#8e8e9333',
+    opacity: 0.35,
+  },
+  pickerButtonNumberDimmed: {
+    color: '#8e8e93',
   },
 });
