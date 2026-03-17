@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -109,7 +110,7 @@ export default function ProgressScreen() {
                 <TouchableOpacity
                   key={stat.topic}
                   style={[styles.topicRow, { backgroundColor: topicBackground }]}
-                  onPress={() => {}}>
+                  onPress={() => router.push({ pathname: '/topic/[name]', params: { name: stat.topic } } as any)}>
                   <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
                   <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
                 </TouchableOpacity>
@@ -127,7 +128,7 @@ export default function ProgressScreen() {
               <TouchableOpacity
                 key={stat.topic}
                 style={[styles.topicRow, { backgroundColor: topicBackground }]}
-                onPress={() => {}}>
+                onPress={() => router.push({ pathname: '/topic/[name]', params: { name: stat.topic } } as any)}>
                 <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
                 <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
               </TouchableOpacity>
