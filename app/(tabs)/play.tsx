@@ -181,6 +181,51 @@ const QUESTIONS: Question[] = [
     answers: ['Unsorted', 'Sorted', 'Filled with unique values', 'Stored in a hash map'],
     correctIndex: 1,
   },
+  {
+    id: '16',
+    topic: 'Dynamic Programming',
+    difficulty: 'SWE3',
+    question: 'Which technique avoids recomputing subproblems by storing their results?',
+    answers: ['Recursion', 'Memoization', 'Greedy', 'Backtracking'],
+    correctIndex: 1,
+  },
+  {
+    id: '17',
+    topic: 'Trees',
+    difficulty: 'SWE3',
+    question: 'What is the worst-case time complexity of inserting into an unbalanced binary search tree?',
+    answers: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
+    correctIndex: 2,
+  },
+  {
+    id: '18',
+    topic: 'DFS / BFS',
+    difficulty: 'SWE3',
+    question: 'Which graph traversal is best suited for finding the shortest path in an unweighted graph?',
+    answers: ['DFS', 'BFS', 'Dijkstra\'s', 'Bellman-Ford'],
+    correctIndex: 1,
+  },
+  {
+    id: '19',
+    topic: 'Dynamic Programming',
+    difficulty: 'SWE3',
+    question: 'What is the time complexity of the classic 0/1 knapsack dynamic programming solution?',
+    answers: ['O(n)', 'O(n log n)', 'O(n²)', 'O(n × W) where W is the capacity'],
+    correctIndex: 3,
+  },
+  {
+    id: '20',
+    topic: 'Sorting',
+    difficulty: 'SWE3',
+    question: 'Why is quicksort\'s worst-case O(n²) but average case O(n log n)?',
+    answers: [
+      'It depends on the size of the input',
+      'Poor pivot selection causes maximally unbalanced partitions',
+      'It performs extra comparisons on sorted arrays',
+      'It uses O(n) extra space in the worst case',
+    ],
+    correctIndex: 1,
+  },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -200,10 +245,13 @@ function shuffleAnswers(q: Question): Question {
 }
 
 const SESSION_SIZES = [5, 10, 15];
+const DIFFICULTIES = ['All', 'SWE1', 'SWE2', 'SWE3'] as const;
+type DifficultyFilter = typeof DIFFICULTIES[number];
 
 export default function PlayScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [sessionSize, setSessionSize] = useState<number | null>(null);
+  const [difficulty, setDifficulty] = useState<DifficultyFilter>('All');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -320,10 +368,11 @@ export default function PlayScreen() {
     }
   }
 
-  // Initializes a new session with the chosen number of questions
+  // Initializes a new session with the chosen number of questions, filtered by difficulty
   function handleStartSession(size: number) {
     setSessionSize(size);
-    setQuestions(shuffle(QUESTIONS).slice(0, Math.min(size, QUESTIONS.length)).map(shuffleAnswers));
+    const pool = difficulty === 'All' ? QUESTIONS : QUESTIONS.filter((q) => q.difficulty === difficulty);
+    setQuestions(shuffle(pool).slice(0, Math.min(size, pool.length)).map(shuffleAnswers));
     setCurrentIndex(0);
     setSelectedIndex(null);
     setScore(0);
@@ -342,17 +391,45 @@ export default function PlayScreen() {
       <ThemedView style={styles.container}>
         <View style={styles.pickerContent}>
           <ThemedText type="title">Let's Play</ThemedText>
-          <ThemedText style={styles.pickerSubtitle}>How many questions?</ThemedText>
-          <View style={styles.pickerButtons}>
-            {SESSION_SIZES.map((size) => (
-              <TouchableOpacity
-                key={size}
-                style={styles.pickerButton}
-                onPress={() => handleStartSession(size)}>
-                <ThemedText style={styles.pickerButtonNumber}>{size}</ThemedText>
-                <ThemedText style={styles.pickerButtonLabel}>questions</ThemedText>
-              </TouchableOpacity>
-            ))}
+
+          <View style={styles.difficultySection}>
+            <ThemedText style={styles.pickerSubtitle}>Difficulty</ThemedText>
+            <View style={styles.difficultyButtons}>
+              {DIFFICULTIES.map((d) => (
+                <TouchableOpacity
+                  key={d}
+                  style={[
+                    styles.difficultyButton,
+                    difficulty === d && styles.difficultyButtonActive,
+                    difficulty === d && d !== 'All' && { backgroundColor: difficultyStyles[d].badge.backgroundColor },
+                  ]}
+                  onPress={() => setDifficulty(d)}>
+                  <ThemedText
+                    style={[
+                      styles.difficultyButtonText,
+                      difficulty === d && styles.difficultyButtonTextActive,
+                      difficulty === d && d !== 'All' && { color: (difficultyStyles[d].text as { color: string }).color },
+                    ]}>
+                    {d}
+                  </ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.difficultySection}>
+            <ThemedText style={styles.pickerSubtitle}>Questions</ThemedText>
+            <View style={styles.pickerButtons}>
+              {SESSION_SIZES.map((size) => (
+                <TouchableOpacity
+                  key={size}
+                  style={styles.pickerButton}
+                  onPress={() => handleStartSession(size)}>
+                  <ThemedText style={styles.pickerButtonNumber}>{size}</ThemedText>
+                  <ThemedText style={styles.pickerButtonLabel}>questions</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
       </ThemedView>
@@ -474,7 +551,7 @@ export default function PlayScreen() {
   );
 }
 
-const difficultyStyles: Record<string, { badge: object; text: object }> = {
+const difficultyStyles: Record<string, { badge: { backgroundColor: string }; text: { fontSize: number; fontWeight: '600'; color: string } }> = {
   SWE1: { badge: { backgroundColor: '#e8f5e9' }, text: { fontSize: 13, fontWeight: '600', color: '#4caf50' } },
   SWE2: { badge: { backgroundColor: '#fff3e0' }, text: { fontSize: 13, fontWeight: '600', color: '#ff9500' } },
   SWE3: { badge: { backgroundColor: '#fdecea' }, text: { fontSize: 13, fontWeight: '600', color: '#f44336' } },
@@ -679,5 +756,32 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#0a7ea4',
     opacity: 0.7,
+  },
+  difficultySection: {
+    width: '100%',
+    gap: 12,
+  },
+  difficultyButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  difficultyButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#8e8e9344',
+  },
+  difficultyButtonActive: {
+    borderColor: 'transparent',
+  },
+  difficultyButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    opacity: 0.4,
+  },
+  difficultyButtonTextActive: {
+    opacity: 1,
   },
 });
