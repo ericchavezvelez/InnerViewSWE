@@ -72,6 +72,7 @@ export default function AllTopicsScreen() {
                 <ThemedText style={[styles.topicAccuracy, { color: accuracy >= 70 ? '#4caf50' : '#f44336' }]}>
                   {accuracy}%
                 </ThemedText>
+                <ThemedText style={styles.topicChevron}>›</ThemedText>
               </TouchableOpacity>
             );
           })}
@@ -128,5 +129,10 @@ const styles = StyleSheet.create({
   topicAccuracy: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  topicChevron: {
+    fontSize: 18,
+    opacity: 0.3,
+    marginLeft: 4,
   },
 });

@@ -113,6 +113,7 @@ export default function ProgressScreen() {
                   onPress={() => router.push({ pathname: '/topic/[name]', params: { name: stat.topic } } as any)}>
                   <ThemedText style={styles.topicText}>{stat.topic}</ThemedText>
                   <ThemedText style={styles.topicAccuracy}>{formatAccuracy(stat)}</ThemedText>
+                  <ThemedText style={styles.topicChevron}>›</ThemedText>
                 </TouchableOpacity>
               ))
             )}
@@ -231,6 +232,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#0a7ea4',
+  },
+  topicChevron: {
+    fontSize: 18,
+    opacity: 0.3,
+    marginLeft: 4,
   },
   emptyText: {
     fontSize: 14,
