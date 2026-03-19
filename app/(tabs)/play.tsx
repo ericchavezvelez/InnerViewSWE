@@ -940,8 +940,8 @@ export default function PlayScreen() {
           ))}
         </View>
 
-        {/* Explanation — shown after a wrong answer */}
-        {isAnswered && selectedIndex !== question.correctIndex && (
+        {/* Explanation — shown after any answer */}
+        {isAnswered && (
           <View style={styles.explanationCard}>
             <ThemedText style={styles.explanationLabel}>✦ Why?</ThemedText>
             <ThemedText style={styles.explanationText}>
