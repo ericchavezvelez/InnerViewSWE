@@ -28,6 +28,7 @@ type WrongAnswer = {
   topic: string;
   selected: string;
   correct: string;
+  explanation: string;
 };
 
 const QUESTIONS: Question[] = [
@@ -737,6 +738,7 @@ export default function PlayScreen() {
           topic: question.topic,
           selected: question.answers[index],
           correct: question.answers[question.correctIndex],
+          explanation: question.explanation,
         },
       ]);
     }
@@ -870,6 +872,9 @@ export default function PlayScreen() {
                   <View style={styles.missedRow}>
                     <ThemedText style={styles.missedCorrect}>✓ {w.correct}</ThemedText>
                   </View>
+                  <View style={styles.missedExplanationRow}>
+                    <ThemedText style={styles.missedExplanation}>{w.explanation}</ThemedText>
+                  </View>
                 </View>
               ))}
             </View>
@@ -940,8 +945,8 @@ export default function PlayScreen() {
           ))}
         </View>
 
-        {/* Explanation — shown after any answer */}
-        {isAnswered && (
+        {/* Explanation — shown after a wrong answer */}
+        {isAnswered && selectedIndex !== question.correctIndex && (
           <View style={styles.explanationCard}>
             <ThemedText style={styles.explanationLabel}>✦ Why?</ThemedText>
             <ThemedText style={styles.explanationText}>
@@ -1119,6 +1124,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4caf50',
     lineHeight: 20,
+  },
+  missedExplanationRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#8e8e9322',
+    paddingTop: 8,
+    marginTop: 4,
+  },
+  missedExplanation: {
+    fontSize: 13,
+    lineHeight: 19,
+    opacity: 0.55,
   },
   playAgainButton: {
     backgroundColor: '#0a7ea4',
