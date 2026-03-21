@@ -8,13 +8,17 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 
+type RecentAnswer = { topic: string; is_correct: boolean; created_at: string };
+
 export default function ProfileScreen() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [streak, setStreak] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);
+  const [recentActivity, setRecentActivity] = useState<RecentAnswer[]>([]);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
+  const rowBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
   const avatarBackground = useThemeColor({ light: '#0a7ea4', dark: '#0a7ea4' }, 'background');
 
   // Counts consecutive days with at least one answer, ending today or yesterday
@@ -52,6 +56,14 @@ export default function ProfileScreen() {
             setTotalAnswered(data.length);
             setStreak(computeStreak(data.map((r) => r.created_at)));
           });
+
+        supabase
+          .from('user_answers')
+          .select('topic, is_correct, created_at')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+          .then(({ data }) => setRecentActivity(data ?? []));
       });
     }, [])
   );
@@ -64,6 +76,17 @@ export default function ProfileScreen() {
   // Returns the first letter of the username, uppercased, for the avatar circle
   function getInitial(): string {
     return username ? username[0].toUpperCase() : '?';
+  }
+
+  // Returns a human-readable relative time string (e.g. "2h ago", "Yesterday")
+  function formatRelative(ts: string): string {
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return mins <= 1 ? 'Just now' : `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    if (hours < 48) return 'Yesterday';
+    return `${Math.floor(hours / 24)}d ago`;
   }
 
   return (
@@ -92,6 +115,22 @@ export default function ProfileScreen() {
             <ThemedText style={styles.statLabel}>Answered</ThemedText>
           </View>
         </View>
+
+        {/* Recent Activity */}
+        {recentActivity.length > 0 && (
+          <View style={styles.section}>
+            <ThemedText type="subtitle">Recent Activity</ThemedText>
+            <View style={styles.activityList}>
+              {recentActivity.map((a, i) => (
+                <View key={i} style={[styles.activityRow, { backgroundColor: rowBackground }]}>
+                  <View style={[styles.activityDot, { backgroundColor: a.is_correct ? '#4caf50' : '#f44336' }]} />
+                  <ThemedText style={styles.activityTopic}>{a.topic}</ThemedText>
+                  <ThemedText style={styles.activityTime}>{formatRelative(a.created_at)}</ThemedText>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Sign out */}
         <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
@@ -160,6 +199,35 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 13,
     opacity: 0.5,
+    fontWeight: '500',
+  },
+  section: {
+    gap: 12,
+  },
+  activityList: {
+    gap: 8,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  activityDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  activityTopic: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  activityTime: {
+    fontSize: 13,
+    opacity: 0.4,
     fontWeight: '500',
   },
   signOutButton: {
