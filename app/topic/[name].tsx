@@ -87,6 +87,15 @@ export default function TopicDetailScreen() {
               <ThemedText style={styles.accuracyLabel}>Attempts</ThemedText>
             </View>
           </View>
+
+          {total > 0 && (
+            <View style={styles.barContainer}>
+              <View style={[styles.barFill, { flex: correct, backgroundColor: '#4caf50' }]} />
+              {total - correct > 0 && (
+                <View style={[styles.barFill, { flex: total - correct, backgroundColor: '#f44336' }]} />
+              )}
+            </View>
+          )}
         </View>
 
         {/* Attempt history */}
@@ -133,6 +142,7 @@ const styles = StyleSheet.create({
   accuracyCard: {
     borderRadius: 16,
     paddingVertical: 20,
+    overflow: 'hidden',
   },
   accuracyRow: {
     flexDirection: 'row',
@@ -157,6 +167,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.5,
     fontWeight: '500',
+  },
+  barContainer: {
+    flexDirection: 'row',
+    height: 6,
+    marginTop: 16,
+    marginHorizontal: 20,
+    borderRadius: 3,
+    overflow: 'hidden',
+    gap: 2,
+  },
+  barFill: {
+    borderRadius: 3,
   },
   section: {
     gap: 12,
