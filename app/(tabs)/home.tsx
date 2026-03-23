@@ -29,6 +29,7 @@ export default function HomeScreen() {
   const [username, setUsername] = useState('');
   const [topicStats, setTopicStats] = useState<TopicStats>({});
   const [streak, setStreak] = useState(0);
+  const [weeklyCount, setWeeklyCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const circleBorder = useThemeColor({ light: '#d1d1d6', dark: '#3a3a3c' }, 'background');
@@ -59,6 +60,7 @@ export default function HomeScreen() {
       setLoading(true);
       setTopicStats({});
       setStreak(0);
+      setWeeklyCount(0);
       supabase.auth.getSession().then(({ data: { session } }) => {
         setUsername(session?.user?.user_metadata?.username ?? '');
         if (!session?.user.id) { setLoading(false); return; }
@@ -78,6 +80,8 @@ export default function HomeScreen() {
               }
               setTopicStats(stats);
               setStreak(computeStreak(data.map((r) => r.created_at)));
+              const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+              setWeeklyCount(data.filter((r) => new Date(r.created_at).getTime() >= weekAgo).length);
             }
             setLoading(false);
           });
@@ -112,10 +116,17 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <ThemedText type="title">Welcome back, {username}!</ThemedText>
-          <View style={[styles.streakBadge, { backgroundColor: streak === 0 ? neutralBadge : streakBackground }]}>
-            <ThemedText style={styles.streakText}>
-              {streak === 0 ? '👋 Start your streak!' : `🔥 ${streak} Day Streak`}
-            </ThemedText>
+          <View style={styles.badgeRow}>
+            <View style={[styles.streakBadge, { backgroundColor: streak === 0 ? neutralBadge : streakBackground }]}>
+              <ThemedText style={styles.streakText}>
+                {streak === 0 ? '👋 Start your streak!' : `🔥 ${streak} Day Streak`}
+              </ThemedText>
+            </View>
+            <View style={[styles.streakBadge, { backgroundColor: neutralBadge }]}>
+              <ThemedText style={styles.streakText}>
+                {weeklyCount} this week
+              </ThemedText>
+            </View>
           </View>
         </View>
 
@@ -149,6 +160,11 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: 12,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
   },
   streakBadge: {
     alignSelf: 'flex-start',
