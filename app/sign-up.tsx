@@ -57,7 +57,7 @@ export default function SignUpScreen() {
       return;
     }
 
-    router.replace('/(tabs)/home');
+    router.replace('/onboarding' as any);
   }
 
   return (
