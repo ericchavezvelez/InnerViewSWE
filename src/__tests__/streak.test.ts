@@ -75,6 +75,12 @@ describe('computeStreak()', () => {
     expect(computeStreak(activity)).toBe(1);
   });
 
+  it('returns 0 when activity exists but none within the last 2 days', () => {
+    // Scattered history with no recent activity — streak should be broken
+    const activity = [daysAgo(3), daysAgo(5), daysAgo(10), daysAgo(14)];
+    expect(computeStreak(activity)).toBe(0);
+  });
+
   it('handles a long consecutive streak correctly', () => {
     const activity = Array.from({ length: 14 }, (_, i) => daysAgo(i));
     expect(computeStreak(activity)).toBe(14);
