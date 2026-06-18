@@ -190,4 +190,11 @@ describe('buildSessionPool()', () => {
     const result = buildSessionPool(MOCK_QUESTIONS, 'SWE2', 5);
     expect(result.every((q) => q.difficulty === 'SWE2')).toBe(true);
   });
+
+  it('does not return duplicate questions in a session', () => {
+    const result = buildSessionPool(MOCK_QUESTIONS, 'All', 6);
+    const ids = result.map((q) => q.id);
+    const uniqueIds = new Set(ids);
+    expect(uniqueIds.size).toBe(ids.length);
+  });
 });
