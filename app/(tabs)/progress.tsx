@@ -7,8 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
-
-type TopicStat = { topic: string; correct: number; total: number };
+import { type TopicStat, computeTopicStats, formatAccuracy } from '@/src/lib/progressUtils';
 
 export default function ProgressScreen() {
   const [correctCount, setCorrectCount] = useState(0);
@@ -37,37 +36,22 @@ export default function ProgressScreen() {
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (data && data.length > 0) {
-              const correct = data.filter((r) => r.is_correct).length;
-              setCorrectCount(correct);
+              setCorrectCount(data.filter((r) => r.is_correct).length);
               setTotalCount(data.length);
 
-              // Group answers by topic and compute per-topic accuracy
-              const statsMap: Record<string, { correct: number; total: number }> = {};
-              for (const row of data) {
-                const topic = (row.topics as unknown as { name: string }).name;
-                if (!statsMap[topic]) statsMap[topic] = { correct: 0, total: 0 };
-                statsMap[topic].total += 1;
-                if (row.is_correct) statsMap[topic].correct += 1;
-              }
-
-              // Sort by accuracy desc — top 3 = best, bottom 3 = worst
-              const sorted = Object.entries(statsMap)
-                .map(([topic, s]) => ({ topic, ...s }))
-                .sort((a, b) => b.correct / b.total - a.correct / a.total);
-
-              setBestTopics(sorted.slice(0, 3));
-              setWorstTopics(sorted.slice(-3).reverse());
+              const rows = data.map((r) => ({
+                is_correct: r.is_correct,
+                topic: (r.topics as unknown as { name: string }).name,
+              }));
+              const { best, worst } = computeTopicStats(rows);
+              setBestTopics(best);
+              setWorstTopics(worst);
             }
             setLoading(false);
           });
       });
     }, [])
   );
-
-  // Converts a topic's correct/total into a rounded percentage string
-  function formatAccuracy(stat: TopicStat): string {
-    return `${Math.round((stat.correct / stat.total) * 100)}%`;
-  }
 
   if (loading) {
     return (
