@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1781843841814" clover="3.2.0">
-  <project timestamp="1781843841814" name="All files">
+<coverage generated="1781907075909" clover="3.2.0">
+  <project timestamp="1781907075909" name="All files">
     <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="3" elements="10" coveredelements="10" complexity="0" loc="5" ncloc="5" packages="1" files="1" classes="1"/>
     <file name="questionUtils.ts" path="/Users/ericchavez/Engineering/Projects/InnerViewSWE/src/lib/questionUtils.ts">
       <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="3"/>

@@ -32,8 +32,8 @@ export default function ProgressScreen() {
         if (!session?.user.id) { setLoading(false); return; }
 
         supabase
-          .from('user_answers')
-          .select('topic, is_correct')
+          .from('user_responses')
+          .select('is_correct, topics(name)')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (data && data.length > 0) {
@@ -44,9 +44,10 @@ export default function ProgressScreen() {
               // Group answers by topic and compute per-topic accuracy
               const statsMap: Record<string, { correct: number; total: number }> = {};
               for (const row of data) {
-                if (!statsMap[row.topic]) statsMap[row.topic] = { correct: 0, total: 0 };
-                statsMap[row.topic].total += 1;
-                if (row.is_correct) statsMap[row.topic].correct += 1;
+                const topic = (row.topics as unknown as { name: string }).name;
+                if (!statsMap[topic]) statsMap[topic] = { correct: 0, total: 0 };
+                statsMap[topic].total += 1;
+                if (row.is_correct) statsMap[topic].correct += 1;
               }
 
               // Sort by accuracy desc — top 3 = best, bottom 3 = worst
