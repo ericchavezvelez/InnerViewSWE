@@ -46,6 +46,7 @@ export default function PlayScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [questionsError, setQuestionsError] = useState(false);
   const [sessionSize, setSessionSize] = useState<number | null>(null);
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('All');
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -76,18 +77,28 @@ export default function PlayScreen() {
     }
   }, [sessionComplete]);
 
+  function loadQuestions() {
+    setQuestionsLoading(true);
+    setQuestionsError(false);
+    supabase
+      .from('questions')
+      .select('id, lesson_id, topic_id, prompt, metadata, explanation, swe_level, xp_reward, topics(name), lessons(category_id)')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[play] failed to load questions:', error.message);
+          setQuestionsError(true);
+        } else if (data) {
+          setAllQuestions((data as unknown as SupabaseRow[]).map(mapToQuestion));
+        }
+        setQuestionsLoading(false);
+      });
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserId(session?.user.id ?? null);
     });
-
-    supabase
-      .from('questions')
-      .select('id, lesson_id, topic_id, prompt, metadata, explanation, swe_level, xp_reward, topics(name), lessons(category_id)')
-      .then(({ data }) => {
-        if (data) setAllQuestions((data as unknown as SupabaseRow[]).map(mapToQuestion));
-        setQuestionsLoading(false);
-      });
+    loadQuestions();
   }, []);
 
   const question = questions[currentIndex];
@@ -200,6 +211,15 @@ export default function PlayScreen() {
       <ThemedView style={styles.container}>
         <View style={styles.pickerContent}>
           <ThemedText type="title">Let's Play</ThemedText>
+
+          {questionsError && (
+            <View style={styles.errorBox}>
+              <ThemedText style={styles.errorText}>Couldn't load questions.</ThemedText>
+              <TouchableOpacity onPress={loadQuestions}>
+                <ThemedText style={styles.retryText}>Tap to retry</ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <View style={styles.difficultySection}>
             <ThemedText style={styles.pickerSubtitle}>Difficulty</ThemedText>
@@ -662,5 +682,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     opacity: 0.6,
+  },
+  errorBox: {
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 12,
+  },
+  errorText: {
+    fontSize: 15,
+    opacity: 0.6,
+  },
+  retryText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0a7ea4',
   },
 });
