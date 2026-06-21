@@ -177,5 +177,6 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });

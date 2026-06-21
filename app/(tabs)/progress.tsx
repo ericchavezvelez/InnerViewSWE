@@ -214,11 +214,14 @@ const styles = StyleSheet.create({
   topicText: {
     fontSize: 16,
     fontWeight: '500',
+    flex: 1,
   },
   topicAccuracy: {
     fontSize: 14,
     fontWeight: '600',
     color: '#0a7ea4',
+    minWidth: 44,
+    textAlign: 'right',
   },
   topicChevron: {
     fontSize: 18,
