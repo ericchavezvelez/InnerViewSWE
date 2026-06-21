@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
+import { computeStreak, computeWeeklyCount } from '@/src/lib/homeUtils';
 
 const PROGRESS_CIRCLES = ['Algorithms', 'Data Structures', 'Big O'];
 
@@ -36,24 +37,6 @@ export default function HomeScreen() {
   const streakBackground = useThemeColor({ light: '#fff3e0', dark: '#2c1a00' }, 'background');
   const neutralBadge = useThemeColor({ light: '#f2f2f7', dark: '#2c2c2e' }, 'background');
 
-  // Counts consecutive days with at least one answer, ending today or yesterday
-  function computeStreak(createdAts: string[]): number {
-    if (createdAts.length === 0) return 0;
-    const uniqueDays = new Set(
-      createdAts.map((ts) => new Date(ts).toLocaleDateString('en-CA'))
-    );
-    const checkDate = new Date();
-    if (!uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    let count = 0;
-    while (uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-      count += 1;
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    return count;
-  }
-
   // Refetches user data every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -66,22 +49,22 @@ export default function HomeScreen() {
         if (!session?.user.id) { setLoading(false); return; }
 
         supabase
-          .from('user_answers')
-          .select('topic, is_correct, created_at')
+          .from('user_responses')
+          .select('is_correct, created_at, topics(name)')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (data) {
               const stats: TopicStats = {};
               for (const row of data) {
-                const category = TOPIC_TO_CATEGORY[row.topic] ?? row.topic;
+                const topic = (row.topics as unknown as { name: string }).name;
+                const category = TOPIC_TO_CATEGORY[topic] ?? topic;
                 if (!stats[category]) stats[category] = { correct: 0, total: 0 };
                 stats[category].total += 1;
                 if (row.is_correct) stats[category].correct += 1;
               }
               setTopicStats(stats);
               setStreak(computeStreak(data.map((r) => r.created_at)));
-              const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-              setWeeklyCount(data.filter((r) => new Date(r.created_at).getTime() >= weekAgo).length);
+              setWeeklyCount(computeWeeklyCount(data.map((r) => r.created_at)));
             }
             setLoading(false);
           });

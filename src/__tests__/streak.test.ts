@@ -1,8 +1,8 @@
 /**
- * Test Suite: Streak Calculation
- * Requirements covered: streak counter correctness on Home tab
+ * Test Suite: Home Tab Utility Functions
+ * Requirements covered: streak counter and weekly count on Home tab
  *
- * Equivalence partitioning classes:
+ * Equivalence partitioning classes (computeStreak):
  *   - No activity (empty array) → 0
  *   - Activity today only → 1
  *   - Activity yesterday only → 1
@@ -10,22 +10,14 @@
  *   - Consecutive days ending yesterday → n
  *   - Gap in activity → counts only most recent streak
  *   - Duplicate entries on same day → counted as 1 day
+ *
+ * Equivalence partitioning classes (computeWeeklyCount):
+ *   - No activity → 0
+ *   - All activity within 7 days → full count
+ *   - Mix of recent and old activity → only recent counted
  */
 
-function computeStreak(createdAts: string[]): number {
-  if (createdAts.length === 0) return 0;
-  const uniqueDays = new Set(createdAts.map((ts) => new Date(ts).toLocaleDateString('en-CA')));
-  const checkDate = new Date();
-  if (!uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
-  let count = 0;
-  while (uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-    count += 1;
-    checkDate.setDate(checkDate.getDate() - 1);
-  }
-  return count;
-}
+import { computeStreak, computeWeeklyCount } from '@/src/lib/homeUtils';
 
 // Generates an ISO timestamp N days ago from today
 function daysAgo(n: number): string {
@@ -34,7 +26,7 @@ function daysAgo(n: number): string {
   return d.toISOString();
 }
 
-// ─── Tests ────────────────────────────────────────────────────────────────────
+// ─── computeStreak ────────────────────────────────────────────────────────────
 
 describe('computeStreak()', () => {
   it('returns 0 for an empty activity array', () => {
@@ -91,5 +83,34 @@ describe('computeStreak()', () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const activity = [tomorrow.toISOString(), daysAgo(0), daysAgo(1)];
     expect(computeStreak(activity)).toBe(2);
+  });
+});
+
+// ─── computeWeeklyCount ───────────────────────────────────────────────────────
+
+describe('computeWeeklyCount()', () => {
+  it('returns 0 for an empty activity array', () => {
+    expect(computeWeeklyCount([])).toBe(0);
+  });
+
+  it('counts all entries when all are within the last 7 days', () => {
+    const activity = [daysAgo(0), daysAgo(2), daysAgo(6)];
+    expect(computeWeeklyCount(activity)).toBe(3);
+  });
+
+  it('excludes entries older than 7 days', () => {
+    const activity = [daysAgo(0), daysAgo(3), daysAgo(8), daysAgo(14)];
+    expect(computeWeeklyCount(activity)).toBe(2);
+  });
+
+  it('returns 0 when all entries are older than 7 days', () => {
+    const activity = [daysAgo(8), daysAgo(10), daysAgo(20)];
+    expect(computeWeeklyCount(activity)).toBe(0);
+  });
+
+  it('counts multiple entries on the same day independently', () => {
+    // Unlike streak, weekly count is a raw answer count — not deduplicated
+    const activity = [daysAgo(0), daysAgo(0), daysAgo(0)];
+    expect(computeWeeklyCount(activity)).toBe(3);
   });
 });
