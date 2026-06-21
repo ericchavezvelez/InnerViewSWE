@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 import { computeStreak, computeWeeklyCount } from '@/src/lib/homeUtils';
+import { type UserResponseRowWithDate } from '@/src/lib/types';
 
 const PROGRESS_CIRCLES = ['Algorithms', 'Data Structures', 'Big O'];
 
@@ -54,9 +55,10 @@ export default function HomeScreen() {
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (data) {
+              const rows = data as unknown as UserResponseRowWithDate[];
               const stats: TopicStats = {};
-              for (const row of data) {
-                const topic = (row.topics as unknown as { name: string }).name;
+              for (const row of rows) {
+                const topic = row.topics.name;
                 const category = TOPIC_TO_CATEGORY[topic] ?? topic;
                 if (!stats[category]) stats[category] = { correct: 0, total: 0 };
                 stats[category].total += 1;

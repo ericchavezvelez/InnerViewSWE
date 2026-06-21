@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 import { type TopicStat, computeTopicStats, formatAccuracy } from '@/src/lib/progressUtils';
+import { type UserResponseRow } from '@/src/lib/types';
 
 export default function ProgressScreen() {
   const [correctCount, setCorrectCount] = useState(0);
@@ -36,14 +37,15 @@ export default function ProgressScreen() {
           .eq('user_id', session.user.id)
           .then(({ data }) => {
             if (data && data.length > 0) {
-              setCorrectCount(data.filter((r) => r.is_correct).length);
-              setTotalCount(data.length);
+              const rows = data as unknown as UserResponseRow[];
+              setCorrectCount(rows.filter((r) => r.is_correct).length);
+              setTotalCount(rows.length);
 
-              const rows = data.map((r) => ({
+              const topicRows = rows.map((r) => ({
                 is_correct: r.is_correct,
-                topic: (r.topics as unknown as { name: string }).name,
+                topic: r.topics.name,
               }));
-              const { best, worst } = computeTopicStats(rows);
+              const { best, worst } = computeTopicStats(topicRows);
               setBestTopics(best);
               setWorstTopics(worst);
             }
