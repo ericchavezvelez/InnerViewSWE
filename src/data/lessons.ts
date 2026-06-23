@@ -62,4 +62,59 @@ export const LESSONS: Record<string, LessonContent> = {
       },
     ],
   },
+
+  HashMaps: {
+    topic: 'HashMaps',
+    tagline: 'The go-to structure for turning O(n²) solutions into O(n).',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'A HashMap (also called a hash table or dictionary) stores key-value pairs. It uses a hash function to convert a key into an array index, giving you O(1) average-case lookup, insertion, and deletion. This makes it one of the most powerful tools in an interview setting.',
+      },
+      {
+        type: 'concept',
+        title: 'Time Complexities',
+        body:
+          'Lookup by key: O(1) average, O(n) worst case (hash collision)\nInsert: O(1) average\nDelete: O(1) average\nIterate over all entries: O(n)\n\nWorst case collisions are rare in practice and ignored in most interview analysis.',
+      },
+      {
+        type: 'concept',
+        title: 'When to Reach for a HashMap',
+        body:
+          'Frequency counting — count how many times each element appears.\n\nComplement lookup — store values you\'ve already seen so you can check for a match in O(1) instead of scanning again.\n\nGrouping — group items by a computed key (e.g. anagram grouping by sorted characters).\n\nCaching / memoization — store results of expensive calls keyed by their inputs.',
+      },
+      {
+        type: 'code',
+        label: 'Frequency Count — find first non-repeating character',
+        content:
+`function firstUnique(s: string): string {
+  const freq: Record<string, number> = {};
+
+  for (const ch of s) {
+    freq[ch] = (freq[ch] ?? 0) + 1;
+  }
+
+  for (const ch of s) {
+    if (freq[ch] === 1) return ch;
+  }
+
+  return '';
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'Whenever you see "find a pair", "find a duplicate", or "group by property" in a problem — a HashMap is almost always the right first instinct. It trades memory for speed.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the average time complexity of looking up a value by key in a HashMap?',
+        options: ['O(log n)', 'O(n)', 'O(1)', 'O(n log n)'],
+        correctIndex: 2,
+        explanation:
+          'HashMaps use a hash function to map keys directly to memory positions, giving O(1) average lookup. Worst case is O(n) due to collisions, but this is rare with a good hash function.',
+      },
+    ],
+  },
 };
