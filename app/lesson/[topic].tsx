@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
@@ -12,6 +12,7 @@ export default function LessonDetailScreen() {
   const lesson = LESSONS[topic ?? ''];
 
   const codeBackground   = useThemeColor({ light: '#1c1c1e', dark: '#000000' }, 'background');
+  const codeHeaderBackground = useThemeColor({ light: '#2c2c2e', dark: '#1a1a1a' }, 'background');
   const tipBackground    = useThemeColor({ light: '#e8f4fd', dark: '#0d2d44' }, 'background');
   const conceptBackground = useThemeColor({ light: '#f2f2f7', dark: '#2c2c2e' }, 'background');
 
@@ -36,9 +37,18 @@ export default function LessonDetailScreen() {
       case 'code':
         return (
           <View key={index} style={styles.codeBlock}>
-            <ThemedText style={styles.codeLabel}>{section.label}</ThemedText>
+            <View style={[styles.codeHeader, { backgroundColor: codeHeaderBackground }]}>
+              <View style={styles.codeDots}>
+                <View style={[styles.codeDot, { backgroundColor: '#ff5f57' }]} />
+                <View style={[styles.codeDot, { backgroundColor: '#febc2e' }]} />
+                <View style={[styles.codeDot, { backgroundColor: '#28c840' }]} />
+              </View>
+              <ThemedText style={styles.codeLabel}>{section.label}</ThemedText>
+            </View>
             <View style={[styles.codeContent, { backgroundColor: codeBackground }]}>
-              <ThemedText style={styles.codeText}>{section.content}</ThemedText>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <ThemedText style={styles.codeText}>{section.content}</ThemedText>
+              </ScrollView>
             </View>
           </View>
         );
@@ -159,10 +169,19 @@ const styles = StyleSheet.create({
   conceptTitle: { fontSize: 15, fontWeight: '700' },
   conceptBody: { fontSize: 14, lineHeight: 22, opacity: 0.75 },
 
-  codeBlock: { gap: 8 },
-  codeLabel: { fontSize: 13, fontWeight: '600', opacity: 0.5 },
-  codeContent: { borderRadius: 12, padding: 16 },
-  codeText: { fontFamily: 'monospace', fontSize: 13, color: '#a8ff78', lineHeight: 22 },
+  codeBlock: { gap: 0, borderRadius: 12, overflow: 'hidden' },
+  codeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 12,
+  },
+  codeDots: { flexDirection: 'row', gap: 6 },
+  codeDot: { width: 10, height: 10, borderRadius: 5 },
+  codeLabel: { fontSize: 12, fontWeight: '500', color: '#8e8e93' },
+  codeContent: { padding: 16 },
+  codeText: { fontFamily: Platform.select({ ios: 'Courier New', android: 'monospace' }), fontSize: 13, color: '#a8ff78', lineHeight: 22 },
 
   tipCard: {
     flexDirection: 'row',
