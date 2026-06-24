@@ -120,6 +120,13 @@ function QuizSection({ section }: { section: Extract<Section, { type: 'quiz' }> 
     return defaultBackground;
   }
 
+  function getOptionBorder(index: number): string | undefined {
+    if (!answered) return undefined;
+    if (index === section.correctIndex) return '#4caf50';
+    if (index === selected) return '#f44336';
+    return undefined;
+  }
+
   return (
     <View style={styles.quizCard}>
       <ThemedText style={styles.quizLabel}>Practice Question</ThemedText>
@@ -128,7 +135,11 @@ function QuizSection({ section }: { section: Extract<Section, { type: 'quiz' }> 
         {section.options.map((option, i) => (
           <TouchableOpacity
             key={i}
-            style={[styles.quizOption, { backgroundColor: getOptionBackground(i) }]}
+            style={[
+              styles.quizOption,
+              { backgroundColor: getOptionBackground(i) },
+              getOptionBorder(i) ? { borderWidth: 2, borderColor: getOptionBorder(i) } : styles.quizOptionDefaultBorder,
+            ]}
             onPress={() => { if (!answered) setSelected(i); }}
             disabled={answered}>
             <ThemedText style={styles.quizOptionLetter}>
@@ -204,6 +215,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 12,
+  },
+  quizOptionDefaultBorder: {
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
   quizOptionLetter: { fontSize: 14, fontWeight: '700', opacity: 0.5, width: 18 },
   quizOptionText: { fontSize: 15, flex: 1 },
