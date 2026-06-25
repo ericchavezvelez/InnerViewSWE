@@ -117,4 +117,59 @@ export const LESSONS: Record<string, LessonContent> = {
       },
     ],
   },
+
+  LinkedLists: {
+    topic: 'LinkedLists',
+    tagline: 'Flexible node chains — O(1) inserts, but no random access.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'A linked list is a sequence of nodes where each node holds a value and a pointer to the next node. Unlike arrays, nodes are not stored in contiguous memory — so there is no index-based access. The trade-off is that insertions and deletions at known positions are O(1) since you only update pointers.',
+      },
+      {
+        type: 'concept',
+        title: 'Time Complexities',
+        body:
+          'Access by position: O(n) — must traverse from the head\nSearch: O(n)\nInsert / delete at head: O(1)\nInsert / delete at tail: O(1) with a tail pointer, O(n) without\nInsert / delete in middle: O(n) to find the position, then O(1) to update pointers',
+      },
+      {
+        type: 'concept',
+        title: 'Common Patterns',
+        body:
+          'Two Pointers (Fast & Slow) — use a slow pointer moving one step and a fast pointer moving two. Detects cycles (Floyd\'s algorithm) and finds the middle node.\n\nDummy Head Node — add a placeholder node before the real head to simplify edge cases when inserting or deleting at the front.\n\nIn-place Reversal — reverse a list by updating next pointers iteratively. Avoids extra space.',
+      },
+      {
+        type: 'code',
+        label: 'Reverse a linked list — iterative O(n)',
+        content:
+`function reverseList(head: ListNode | null): ListNode | null {
+  let prev: ListNode | null = null;
+  let curr = head;
+
+  while (curr !== null) {
+    const next = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = next;
+  }
+
+  return prev;
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'When solving linked list problems, draw the nodes and arrows on paper first. Most bugs come from losing a pointer before saving it — always store next before overwriting curr.next.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the time complexity of inserting a node at the head of a linked list?',
+        options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
+        correctIndex: 3,
+        explanation:
+          'Inserting at the head only requires updating two pointers — the new node\'s next points to the old head, and the head pointer updates to the new node. No traversal needed, so it\'s O(1).',
+      },
+    ],
+  },
 };

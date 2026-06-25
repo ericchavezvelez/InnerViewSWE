@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const COMPLETED_KEY = '@innerview:completed_lessons';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -62,7 +65,7 @@ export default function LessonDetailScreen() {
         );
 
       case 'quiz':
-        return <QuizSection key={index} section={section} />;
+        return <QuizSection key={index} section={section} topic={topic ?? ''} />;
     }
   }
 
@@ -104,7 +107,7 @@ export default function LessonDetailScreen() {
 }
 
 // Isolated component so each quiz question manages its own answer state
-function QuizSection({ section }: { section: Extract<Section, { type: 'quiz' }> }) {
+function QuizSection({ section, topic }: { section: Extract<Section, { type: 'quiz' }>; topic: string }) {
   const [selected, setSelected] = useState<number | null>(null);
   const answered = selected !== null;
 
@@ -118,6 +121,14 @@ function QuizSection({ section }: { section: Extract<Section, { type: 'quiz' }> 
     if (index === section.correctIndex) return correctBackground;
     if (index === selected) return wrongBackground;
     return defaultBackground;
+  }
+
+  async function markComplete() {
+    const raw = await AsyncStorage.getItem(COMPLETED_KEY);
+    const existing: string[] = raw ? JSON.parse(raw) : [];
+    if (!existing.includes(topic)) {
+      await AsyncStorage.setItem(COMPLETED_KEY, JSON.stringify([...existing, topic]));
+    }
   }
 
   function getOptionBorder(index: number): string | undefined {
@@ -140,7 +151,12 @@ function QuizSection({ section }: { section: Extract<Section, { type: 'quiz' }> 
               { backgroundColor: getOptionBackground(i) },
               getOptionBorder(i) ? { borderWidth: 2, borderColor: getOptionBorder(i) } : styles.quizOptionDefaultBorder,
             ]}
-            onPress={() => { if (!answered) setSelected(i); }}
+            onPress={() => {
+              if (!answered) {
+                setSelected(i);
+                if (i === section.correctIndex) markComplete();
+              }
+            }}
             disabled={answered}>
             <ThemedText style={styles.quizOptionLetter}>
               {['A', 'B', 'C', 'D'][i]}

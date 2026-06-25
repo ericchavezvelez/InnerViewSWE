@@ -1,9 +1,14 @@
+import { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+
+const COMPLETED_KEY = '@innerview:completed_lessons';
 
 type Lesson = {
   name: string;
@@ -35,8 +40,18 @@ const ALGORITHMS: Lesson[] = [
 ];
 
 export default function LessonsScreen() {
+  const [completed, setCompleted] = useState<Set<string>>(new Set());
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
   const lockedBackground = useThemeColor({ light: '#f9f9f9', dark: '#1c1c1e' }, 'background');
+
+  // Reload completed set each time the tab comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(COMPLETED_KEY).then((raw) => {
+        setCompleted(new Set(raw ? JSON.parse(raw) : []));
+      });
+    }, [])
+  );
 
   function renderLesson(lesson: Lesson) {
     if (!lesson.available) {
@@ -54,6 +69,7 @@ export default function LessonsScreen() {
       );
     }
 
+    const isDone = completed.has(lesson.name);
     return (
       <TouchableOpacity
         key={lesson.name}
@@ -64,7 +80,9 @@ export default function LessonsScreen() {
           <ThemedText style={styles.topicText}>{lesson.name}</ThemedText>
           <ThemedText style={styles.topicDescription}>{lesson.description}</ThemedText>
         </View>
-        <ThemedText style={styles.chevron}>›</ThemedText>
+        {isDone
+          ? <ThemedText style={styles.completedCheck}>✓</ThemedText>
+          : <ThemedText style={styles.chevron}>›</ThemedText>}
       </TouchableOpacity>
     );
   }
@@ -150,6 +168,11 @@ const styles = StyleSheet.create({
   chevron: {
     fontSize: 20,
     opacity: 0.4,
+  },
+  completedCheck: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4caf50',
   },
   comingSoon: {
     fontSize: 11,
