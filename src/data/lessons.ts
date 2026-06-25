@@ -172,4 +172,116 @@ export const LESSONS: Record<string, LessonContent> = {
       },
     ],
   },
+
+  Trees: {
+    topic: 'Trees',
+    tagline: 'Hierarchical structures that power search, parsing, and more.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'A tree is a hierarchical data structure made of nodes. Each node has a value and zero or more child nodes. The top node is the root, nodes with no children are leaves, and every node except the root has exactly one parent. Binary trees — where each node has at most two children — are the most common in interviews.',
+      },
+      {
+        type: 'concept',
+        title: 'Binary Search Tree (BST) Properties',
+        body:
+          'For every node N:\n  • All values in the left subtree are less than N\n  • All values in the right subtree are greater than N\n\nThis ordering gives O(log n) search, insert, and delete on a balanced BST. An unbalanced BST degrades to O(n) in the worst case (a straight line of nodes).',
+      },
+      {
+        type: 'concept',
+        title: 'Traversal Orders',
+        body:
+          'Inorder (Left → Root → Right) — visits nodes in sorted ascending order on a BST.\n\nPreorder (Root → Left → Right) — useful for copying or serializing a tree.\n\nPostorder (Left → Right → Root) — useful for deleting a tree or evaluating expression trees.\n\nLevel Order (BFS) — visits nodes level by level using a queue. Used for shortest path problems.',
+      },
+      {
+        type: 'code',
+        label: 'Inorder traversal — recursive O(n)',
+        content:
+`function inorder(root: TreeNode | null): number[] {
+  if (root === null) return [];
+
+  return [
+    ...inorder(root.left),
+    root.val,
+    ...inorder(root.right),
+  ];
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'Most tree problems have a clean recursive solution. At each node, ask: what do I need from my left subtree? What from my right? What do I return to my parent? Answer those three questions and the code almost writes itself.',
+      },
+      {
+        type: 'quiz',
+        question: 'In what order does an inorder traversal visit nodes on a valid Binary Search Tree?',
+        options: [
+          'Random order',
+          'Descending (largest to smallest)',
+          'Ascending (smallest to largest)',
+          'Level by level',
+        ],
+        correctIndex: 2,
+        explanation:
+          'Inorder traversal visits Left → Root → Right. On a BST, the left subtree always holds smaller values and the right holds larger ones, so inorder produces values in ascending sorted order.',
+      },
+    ],
+  },
+
+  'Binary Search': {
+    topic: 'Binary Search',
+    tagline: 'Eliminate half the search space with every comparison.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'Binary search finds a target in a sorted array by repeatedly halving the search space. Instead of scanning every element (O(n)), it compares the target to the middle element and discards the half that cannot contain the answer — achieving O(log n). It is one of the most frequently tested algorithms in interviews.',
+      },
+      {
+        type: 'concept',
+        title: 'The Three-Part Template',
+        body:
+          'Every binary search follows the same skeleton:\n\n1. Set left = 0, right = array.length - 1\n2. While left <= right:\n   a. Compute mid = Math.floor((left + right) / 2)\n   b. If arr[mid] === target → found it\n   c. If arr[mid] < target → search right half (left = mid + 1)\n   d. If arr[mid] > target → search left half (right = mid - 1)\n3. Return -1 if not found\n\nMastering this template first, then adapting it, solves the vast majority of binary search problems.',
+      },
+      {
+        type: 'concept',
+        title: 'Beyond Simple Search',
+        body:
+          'Binary search appears in disguise in many problems:\n\nFind first / last occurrence — adjust the condition to keep searching after a match.\n\nSearch in rotated array — determine which half is sorted, then decide which side the target is on.\n\nBinary search on the answer — when the answer is a number in a range and you can check "is X possible?" in O(n), binary search on X gives O(n log n) overall.',
+      },
+      {
+        type: 'code',
+        label: 'Classic binary search — O(log n)',
+        content:
+`function search(nums: number[], target: number): number {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+
+    if (nums[mid] === target) return mid;
+    if (nums[mid] < target) left = mid + 1;
+    else right = mid - 1;
+  }
+
+  return -1;
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'Use Math.floor((left + right) / 2) rather than (left + right) / 2 to avoid a floating point result. In languages like Java/C++ you would write left + (right - left) / 2 to prevent integer overflow — good habit to mention in an interview even in JavaScript.',
+      },
+      {
+        type: 'quiz',
+        question: 'How many comparisons does binary search need at most to find a target in a sorted array of 1,024 elements?',
+        options: ['1,024', '512', '10', '32'],
+        correctIndex: 2,
+        explanation:
+          '1,024 = 2¹⁰, so binary search needs at most log₂(1,024) = 10 comparisons. Each step halves the remaining search space: 1024 → 512 → 256 → ... → 1.',
+      },
+    ],
+  },
 };
