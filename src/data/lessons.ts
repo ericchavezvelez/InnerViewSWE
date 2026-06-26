@@ -284,4 +284,126 @@ export const LESSONS: Record<string, LessonContent> = {
       },
     ],
   },
+
+  Sorting: {
+    topic: 'Sorting',
+    tagline: 'Ordering data efficiently — the foundation of many algorithms.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'Sorting arranges elements in a defined order (usually ascending). It is rarely the end goal in interviews — but it unlocks faster algorithms. A sorted array lets you binary search in O(log n), use two pointers in O(n), and eliminate duplicates trivially. Knowing which sort to use and why matters more than memorizing implementations.',
+      },
+      {
+        type: 'concept',
+        title: 'Algorithm Comparison',
+        body:
+          'Bubble Sort — O(n²) time, O(1) space. Simple but slow. Only useful for teaching.\n\nMerge Sort — O(n log n) time, O(n) space. Stable sort. Guaranteed performance on any input. Good for linked lists.\n\nQuick Sort — O(n log n) average, O(n²) worst case, O(log n) space. Fastest in practice due to cache efficiency. Most language built-in sorts use a variant of this.\n\nBuilt-in (.sort()) — use this in interviews unless asked to implement. JavaScript\'s Array.sort() is O(n log n) and stable in modern engines.',
+      },
+      {
+        type: 'concept',
+        title: 'When Sorting Unlocks a Better Solution',
+        body:
+          'Two Sum variant — sort first, then use two pointers instead of a HashMap.\n\nAnagram detection — sort both strings; equal strings are anagrams.\n\nMeeting rooms / interval problems — sort by start time, then scan linearly.\n\nK closest points — sort by distance, take the first K.',
+      },
+      {
+        type: 'code',
+        label: 'Merge Sort — O(n log n) divide and conquer',
+        content:
+`function mergeSort(arr: number[]): number[] {
+  if (arr.length <= 1) return arr;
+
+  const mid = Math.floor(arr.length / 2);
+  const left = mergeSort(arr.slice(0, mid));
+  const right = mergeSort(arr.slice(mid));
+
+  return merge(left, right);
+}
+
+function merge(left: number[], right: number[]): number[] {
+  const result: number[] = [];
+  let i = 0, j = 0;
+
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) result.push(left[i++]);
+    else result.push(right[j++]);
+  }
+
+  return [...result, ...left.slice(i), ...right.slice(j)];
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'In an interview, always reach for the built-in sort first and state its complexity. Only implement from scratch if explicitly asked. Interviewers care more about how you use sorting to simplify a problem than whether you can write merge sort from memory.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the time complexity of Merge Sort in all cases?',
+        options: ['O(n)', 'O(n²)', 'O(n log n)', 'O(log n)'],
+        correctIndex: 2,
+        explanation:
+          'Merge Sort always divides the array in half (log n levels) and merges every element at each level (n work per level), giving O(n log n) in best, average, and worst case — unlike Quick Sort which can degrade to O(n²).',
+      },
+    ],
+  },
+
+  'DFS / BFS': {
+    topic: 'DFS / BFS',
+    tagline: 'Two strategies for exploring every node in a graph or tree.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'Depth-First Search (DFS) and Breadth-First Search (BFS) are the two fundamental ways to traverse a graph or tree. DFS dives as deep as possible before backtracking. BFS explores all neighbors at the current depth before going deeper. Choosing the right one depends on what you\'re looking for.',
+      },
+      {
+        type: 'concept',
+        title: 'DFS vs BFS — When to Use Each',
+        body:
+          'Use DFS when:\n  • You need to explore all paths (permutations, combinations)\n  • You are doing cycle detection\n  • The solution is likely deep in the tree\n  • You want a recursive implementation\n\nUse BFS when:\n  • You need the shortest path in an unweighted graph\n  • You need level-by-level processing\n  • The solution is likely close to the root\n  • You want to avoid deep recursion stack overflow',
+      },
+      {
+        type: 'concept',
+        title: 'Implementation Patterns',
+        body:
+          'DFS — use the call stack (recursion) or an explicit stack (iterative). Mark nodes visited before recursing to avoid infinite loops in graphs.\n\nBFS — always use a queue. Enqueue the start node, then loop: dequeue a node, process it, enqueue its unvisited neighbors. Mark visited when enqueuing, not when processing.',
+      },
+      {
+        type: 'code',
+        label: 'BFS — shortest path in unweighted graph',
+        content:
+`function bfs(graph: Map<number, number[]>, start: number): Map<number, number> {
+  const dist = new Map<number, number>();
+  const queue: number[] = [start];
+  dist.set(start, 0);
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    for (const neighbor of graph.get(node) ?? []) {
+      if (!dist.has(neighbor)) {
+        dist.set(neighbor, dist.get(node)! + 1);
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return dist;
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'The most common DFS mistake is forgetting to mark a node as visited before recursing, causing infinite loops on graphs with cycles. On trees you can skip the visited check since there are no cycles by definition.',
+      },
+      {
+        type: 'quiz',
+        question: 'Which algorithm guarantees the shortest path in an unweighted graph?',
+        options: ['DFS', 'BFS', 'Both equally', 'Neither'],
+        correctIndex: 1,
+        explanation:
+          'BFS explores nodes level by level, so the first time it reaches a node it has taken the fewest possible edges to get there. DFS may find a path but has no guarantee it is the shortest.',
+      },
+    ],
+  },
 };
