@@ -1,9 +1,17 @@
+export type QuizQuestion = {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
 export type Section =
-  | { type: 'intro';    content: string }
-  | { type: 'concept';  title: string; body: string }
-  | { type: 'code';     label: string; content: string }
-  | { type: 'tip';      content: string }
-  | { type: 'quiz';     question: string; options: string[]; correctIndex: number; explanation: string };
+  | { type: 'intro';       content: string }
+  | { type: 'concept';     title: string; body: string }
+  | { type: 'code';        label: string; content: string }
+  | { type: 'tip';         content: string }
+  | { type: 'quiz';        question: string; options: string[]; correctIndex: number; explanation: string }
+  | { type: 'quiz-pool';   questions: QuizQuestion[] };
 
 export type LessonContent = {
   topic: string;
@@ -53,12 +61,37 @@ export const LESSONS: Record<string, LessonContent> = {
           'When a brute-force solution uses two nested loops (O(n²)), ask yourself: can a HashMap eliminate the inner loop? Arrays + HashMaps together solve a huge category of interview problems.',
       },
       {
-        type: 'quiz',
-        question: 'What is the time complexity of inserting an element at the beginning of an array?',
-        options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
-        correctIndex: 2,
-        explanation:
-          'Inserting at the beginning requires shifting every existing element one position to the right, making it O(n). Only inserting at the end is O(1) amortized.',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What is the time complexity of inserting an element at the beginning of an array?',
+            options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
+            correctIndex: 2,
+            explanation:
+              'Inserting at the beginning requires shifting every existing element one position to the right, making it O(n). Only inserting at the end is O(1) amortized.',
+          },
+          {
+            question: 'Which array technique avoids nested loops by maintaining a fixed range over the data?',
+            options: ['Prefix Sum', 'Sliding Window', 'Binary Search', 'Recursion'],
+            correctIndex: 1,
+            explanation:
+              'A sliding window keeps a contiguous range (window) over the array and expands or shrinks it based on constraints — achieving O(n) instead of O(n²).',
+          },
+          {
+            question: 'You precompute cumulative sums of an array. What is the time complexity to then answer any subarray sum query?',
+            options: ['O(n)', 'O(log n)', 'O(1)', 'O(n²)'],
+            correctIndex: 2,
+            explanation:
+              'With a prefix sum array, the sum of any subarray [i, j] is prefix[j+1] - prefix[i]. That subtraction is a single operation — O(1) per query after O(n) preprocessing.',
+          },
+          {
+            question: 'What is the time complexity of accessing an element by index in an array?',
+            options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
+            correctIndex: 3,
+            explanation:
+              'Arrays store elements in contiguous memory. Given the base address and element size, the CPU computes the target address in one step — constant time regardless of array length.',
+          },
+        ],
       },
     ],
   },

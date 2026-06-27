@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,7 +8,7 @@ const COMPLETED_KEY = '@innerview:completed_lessons';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { LESSONS, type Section } from '@/src/data/lessons';
+import { LESSONS, type Section, type QuizQuestion } from '@/src/data/lessons';
 
 export default function LessonDetailScreen() {
   const { topic } = useLocalSearchParams<{ topic: string }>();
@@ -66,6 +66,9 @@ export default function LessonDetailScreen() {
 
       case 'quiz':
         return <QuizSection key={index} section={section} topic={topic ?? ''} />;
+
+      case 'quiz-pool':
+        return <QuizPoolSection key={index} questions={section.questions} topic={topic ?? ''} />;
     }
   }
 
@@ -107,7 +110,7 @@ export default function LessonDetailScreen() {
 }
 
 // Isolated component so each quiz question manages its own answer state
-function QuizSection({ section, topic }: { section: Extract<Section, { type: 'quiz' }>; topic: string }) {
+function QuizSection({ section, topic }: { section: QuizQuestion; topic: string }) {
   const [selected, setSelected] = useState<number | null>(null);
   const answered = selected !== null;
 
@@ -175,6 +178,15 @@ function QuizSection({ section, topic }: { section: Extract<Section, { type: 'qu
       )}
     </View>
   );
+}
+
+function QuizPoolSection({ questions, topic }: { questions: QuizQuestion[]; topic: string }) {
+  const picked = useMemo(
+    () => questions[Math.floor(Math.random() * questions.length)],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  return <QuizSection section={picked} topic={topic} />;
 }
 
 const styles = StyleSheet.create({
