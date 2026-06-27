@@ -406,4 +406,119 @@ function merge(left: number[], right: number[]): number[] {
       },
     ],
   },
+
+  Strings: {
+    topic: 'Strings',
+    tagline: 'Character sequences with more depth than they first appear.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'Strings are sequences of characters. In most languages they are immutable — operations like concatenation or slicing create a new string rather than modifying the original. This makes naive string manipulation surprisingly expensive, and knowing when to use a character array or StringBuilder instead is a key interview skill.',
+      },
+      {
+        type: 'concept',
+        title: 'Key Operations and Costs',
+        body:
+          'Access character by index: O(1)\nLength: O(1)\nSubstring / slice: O(n) — creates a new string\nConcatenation in a loop: O(n²) — each + creates a new string and copies all characters\nSplit / join: O(n)\n\nAlways prefer building strings with an array and joining at the end when concatenating many pieces.',
+      },
+      {
+        type: 'concept',
+        title: 'Common Patterns',
+        body:
+          'Two Pointers — check palindromes, reverse in place, or match characters from both ends.\n\nSliding Window — longest substring without repeating characters, minimum window substring.\n\nCharacter Frequency Map — anagram detection, grouping by character count. Since there are only 26 letters, a fixed-size array of length 26 is often faster than a HashMap.\n\nReverse / Rotate — many problems reduce to reversing substrings in a specific order.',
+      },
+      {
+        type: 'code',
+        label: 'Valid palindrome — two pointer O(n)',
+        content:
+`function isPalindrome(s: string): boolean {
+  let left = 0;
+  let right = s.length - 1;
+
+  while (left < right) {
+    if (s[left] !== s[right]) return false;
+    left++;
+    right--;
+  }
+
+  return true;
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'When a string problem feels like an array problem — it usually is one. Treat each character as an element, and reach for the same patterns: two pointers, sliding window, or frequency map. The main difference is that strings are immutable, so mutations require converting to an array first.',
+      },
+      {
+        type: 'quiz',
+        question: 'What is the time complexity of concatenating n strings together one by one using the + operator?',
+        options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(1)'],
+        correctIndex: 2,
+        explanation:
+          'Each + creates a new string and copies all existing characters. The first copy is 1 char, the second is 2, and so on — totalling 1 + 2 + ... + n = O(n²). The fix is to collect parts in an array and call .join("") once at the end.',
+      },
+    ],
+  },
+
+  'Dynamic Programming': {
+    topic: 'Dynamic Programming',
+    tagline: 'Solve complex problems by breaking them into overlapping subproblems.',
+    sections: [
+      {
+        type: 'intro',
+        content:
+          'Dynamic Programming (DP) solves problems by breaking them into smaller subproblems, solving each once, and storing the result so it is never recomputed. It applies when a problem has two properties: overlapping subproblems (the same sub-calculation appears multiple times) and optimal substructure (the optimal solution is built from optimal solutions to subproblems).',
+      },
+      {
+        type: 'concept',
+        title: 'Two Approaches',
+        body:
+          'Top-down (Memoization) — write the natural recursive solution, then add a cache. If the answer for a given input is already in the cache, return it immediately. Easy to reason about; starts from the original problem and works down.\n\nBottom-up (Tabulation) — build a table starting from the smallest subproblems and fill it up to the answer. No recursion, no call stack risk. Usually faster in practice due to no function call overhead.',
+      },
+      {
+        type: 'concept',
+        title: 'Identifying a DP Problem',
+        body:
+          'Look for these signals:\n  • "How many ways to..."\n  • "Maximum / minimum value of..."\n  • "Can you reach / achieve..."\n  • Choices at each step that affect future options\n\nStart by defining what dp[i] represents, write the recurrence relation, identify base cases, then decide top-down or bottom-up.',
+      },
+      {
+        type: 'code',
+        label: 'Climbing stairs — bottom-up O(n)',
+        content:
+`// Count ways to reach the nth step taking 1 or 2 steps at a time
+function climbStairs(n: number): number {
+  if (n <= 2) return n;
+
+  const dp = new Array(n + 1);
+  dp[1] = 1;
+  dp[2] = 2;
+
+  for (let i = 3; i <= n; i++) {
+    dp[i] = dp[i - 1] + dp[i - 2];
+  }
+
+  return dp[n];
+}`,
+      },
+      {
+        type: 'tip',
+        content:
+          'Before writing any code, define dp[i] in plain English. If you cannot state clearly what dp[i] represents, you are not ready to code yet. A precise definition makes the recurrence relation and base cases obvious.',
+      },
+      {
+        type: 'quiz',
+        question: 'What does memoization mean in the context of dynamic programming?',
+        options: [
+          'Sorting subproblems before solving them',
+          'Caching the result of each subproblem so it is only computed once',
+          'Solving subproblems in reverse order',
+          'Dividing the problem into non-overlapping subproblems',
+        ],
+        correctIndex: 1,
+        explanation:
+          'Memoization stores the result of each subproblem in a cache (usually a map or array). Before computing, you check the cache — if the answer is there, return it immediately. This turns exponential recursion into polynomial time.',
+      },
+    ],
+  },
 };
