@@ -141,12 +141,47 @@ export const LESSONS: Record<string, LessonContent> = {
           'Whenever you see "find a pair", "find a duplicate", or "group by property" in a problem — a HashMap is almost always the right first instinct. It trades memory for speed.',
       },
       {
-        type: 'quiz',
-        question: 'What is the average time complexity of looking up a value by key in a HashMap?',
-        options: ['O(log n)', 'O(n)', 'O(1)', 'O(n log n)'],
-        correctIndex: 2,
-        explanation:
-          'HashMaps use a hash function to map keys directly to memory positions, giving O(1) average lookup. Worst case is O(n) due to collisions, but this is rare with a good hash function.',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What is the average time complexity of looking up a value by key in a HashMap?',
+            options: ['O(log n)', 'O(n)', 'O(1)', 'O(n log n)'],
+            correctIndex: 2,
+            explanation:
+              'HashMaps use a hash function to map keys directly to memory positions, giving O(1) average lookup. Worst case is O(n) due to collisions, but this is rare with a good hash function.',
+          },
+          {
+            question: 'You want to count how many times each character appears in a string. Which data structure is the best fit?',
+            options: ['Array', 'Linked List', 'HashMap', 'Stack'],
+            correctIndex: 2,
+            explanation:
+              'A HashMap maps each character (key) to its count (value), letting you increment any count in O(1). An array of length 26 also works for lowercase letters, but HashMap handles arbitrary keys without modification.',
+          },
+          {
+            question: 'Two arrays contain integers. You want to find which values appear in both. What is the optimal approach?',
+            options: [
+              'Nested loops — O(n²)',
+              'Sort both arrays then use two pointers — O(n log n)',
+              'Store one array in a HashSet, scan the other — O(n)',
+              'Binary search for each element — O(n log n)',
+            ],
+            correctIndex: 2,
+            explanation:
+              'Loading one array into a HashSet gives O(1) lookups. A single pass through the second array then finds all common values in O(n) total, beating the sort and nested-loop approaches.',
+          },
+          {
+            question: 'What causes a HashMap to degrade from O(1) to O(n) lookup?',
+            options: [
+              'The map has more than 100 entries',
+              'Too many keys hash to the same bucket (collisions)',
+              'The keys are strings instead of integers',
+              'The map is not sorted',
+            ],
+            correctIndex: 1,
+            explanation:
+              'When many keys produce the same hash (collisions), they land in the same bucket and must be scanned linearly. A good hash function and load-factor resizing keep this rare in practice.',
+          },
+        ],
       },
     ],
   },
@@ -196,12 +231,40 @@ export const LESSONS: Record<string, LessonContent> = {
           'When solving linked list problems, draw the nodes and arrows on paper first. Most bugs come from losing a pointer before saving it — always store next before overwriting curr.next.',
       },
       {
-        type: 'quiz',
-        question: 'What is the time complexity of inserting a node at the head of a linked list?',
-        options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
-        correctIndex: 3,
-        explanation:
-          'Inserting at the head only requires updating two pointers — the new node\'s next points to the old head, and the head pointer updates to the new node. No traversal needed, so it\'s O(1).',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What is the time complexity of inserting a node at the head of a linked list?',
+            options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
+            correctIndex: 3,
+            explanation:
+              'Inserting at the head only requires updating two pointers — the new node\'s next points to the old head, and the head pointer updates to the new node. No traversal needed, so it\'s O(1).',
+          },
+          {
+            question: 'What does Floyd\'s cycle detection algorithm use to find a loop in a linked list?',
+            options: [
+              'A HashSet to track visited nodes',
+              'A slow pointer and a fast pointer',
+              'Reversing the list and comparing it',
+              'Counting nodes and checking for a mismatch',
+            ],
+            correctIndex: 1,
+            explanation:
+              'Floyd\'s algorithm uses two pointers: slow moves one step at a time, fast moves two. If a cycle exists, fast will eventually lap slow and they will meet inside the cycle — using O(1) extra space.',
+          },
+          {
+            question: 'Why is accessing the nth element of a linked list O(n) instead of O(1)?',
+            options: [
+              'Linked lists use a slow hash function',
+              'Nodes are not stored in contiguous memory, so you must traverse from the head',
+              'Linked lists sort themselves on access',
+              'Pointers double in size with each node',
+            ],
+            correctIndex: 1,
+            explanation:
+              'Unlike arrays, linked list nodes can live anywhere in memory. There is no formula to jump to node n directly — you must follow next pointers from the head one by one until you reach position n.',
+          },
+        ],
       },
     ],
   },
@@ -247,17 +310,42 @@ export const LESSONS: Record<string, LessonContent> = {
           'Most tree problems have a clean recursive solution. At each node, ask: what do I need from my left subtree? What from my right? What do I return to my parent? Answer those three questions and the code almost writes itself.',
       },
       {
-        type: 'quiz',
-        question: 'In what order does an inorder traversal visit nodes on a valid Binary Search Tree?',
-        options: [
-          'Random order',
-          'Descending (largest to smallest)',
-          'Ascending (smallest to largest)',
-          'Level by level',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'In what order does an inorder traversal visit nodes on a valid Binary Search Tree?',
+            options: [
+              'Random order',
+              'Descending (largest to smallest)',
+              'Ascending (smallest to largest)',
+              'Level by level',
+            ],
+            correctIndex: 2,
+            explanation:
+              'Inorder traversal visits Left → Root → Right. On a BST, the left subtree always holds smaller values and the right holds larger ones, so inorder produces values in ascending sorted order.',
+          },
+          {
+            question: 'Which traversal order would you use to make an exact copy of a binary tree?',
+            options: ['Inorder', 'Postorder', 'Preorder', 'Level Order'],
+            correctIndex: 2,
+            explanation:
+              'Preorder visits Root → Left → Right, so you process each node before its children. This means you can recreate the tree by inserting nodes in the same preorder sequence.',
+          },
+          {
+            question: 'An unbalanced BST containing n nodes degrades to what time complexity for search?',
+            options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
+            correctIndex: 2,
+            explanation:
+              'In the worst case a BST is a straight line (each node has only a right child). Search then degrades to scanning every node — O(n) — identical to a linked list.',
+          },
+          {
+            question: 'Which data structure is typically used to implement a level-order (BFS) tree traversal?',
+            options: ['Stack', 'Queue', 'HashMap', 'Heap'],
+            correctIndex: 1,
+            explanation:
+              'BFS processes nodes level by level. A queue (FIFO) ensures you visit all nodes at depth d before any at depth d+1 — enqueue children as you dequeue each parent.',
+          },
         ],
-        correctIndex: 2,
-        explanation:
-          'Inorder traversal visits Left → Root → Right. On a BST, the left subtree always holds smaller values and the right holds larger ones, so inorder produces values in ascending sorted order.',
       },
     ],
   },
