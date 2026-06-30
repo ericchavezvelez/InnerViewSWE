@@ -9,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { LESSONS, type Section, type QuizQuestion } from '@/src/data/lessons';
+import { pickRandomQuestion } from '@/src/lib/lessonUtils';
 
 export default function LessonDetailScreen() {
   const { topic } = useLocalSearchParams<{ topic: string }>();
@@ -181,11 +182,8 @@ function QuizSection({ section, topic }: { section: QuizQuestion; topic: string 
 }
 
 function QuizPoolSection({ questions, topic }: { questions: QuizQuestion[]; topic: string }) {
-  const picked = useMemo(
-    () => questions[Math.floor(Math.random() * questions.length)],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const picked = useMemo(() => pickRandomQuestion(questions), []);
   return <QuizSection section={picked} topic={topic} />;
 }
 
