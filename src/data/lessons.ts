@@ -396,12 +396,42 @@ export const LESSONS: Record<string, LessonContent> = {
           'Use Math.floor((left + right) / 2) rather than (left + right) / 2 to avoid a floating point result. In languages like Java/C++ you would write left + (right - left) / 2 to prevent integer overflow — good habit to mention in an interview even in JavaScript.',
       },
       {
-        type: 'quiz',
-        question: 'How many comparisons does binary search need at most to find a target in a sorted array of 1,024 elements?',
-        options: ['1,024', '512', '10', '32'],
-        correctIndex: 2,
-        explanation:
-          '1,024 = 2¹⁰, so binary search needs at most log₂(1,024) = 10 comparisons. Each step halves the remaining search space: 1024 → 512 → 256 → ... → 1.',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'How many comparisons does binary search need at most to find a target in a sorted array of 1,024 elements?',
+            options: ['1,024', '512', '10', '32'],
+            correctIndex: 2,
+            explanation:
+              '1,024 = 2¹⁰, so binary search needs at most log₂(1,024) = 10 comparisons. Each step halves the remaining search space: 1024 → 512 → 256 → ... → 1.',
+          },
+          {
+            question: 'Binary search requires that the input array is ___.',
+            options: ['Sorted', 'Unsorted', 'Filled with unique values', 'Stored in a HashMap'],
+            correctIndex: 0,
+            explanation:
+              'Binary search works by comparing the target to the middle element and discarding half the array. This only works correctly if the array is sorted — otherwise discarding a half could exclude the target.',
+          },
+          {
+            question: 'When computing the midpoint in binary search, why write left + Math.floor((right - left) / 2) instead of Math.floor((left + right) / 2)?',
+            options: [
+              'It runs faster',
+              'It avoids integer overflow when left + right exceeds the max integer',
+              'It produces a different midpoint',
+              'It handles empty arrays',
+            ],
+            correctIndex: 1,
+            explanation:
+              'In languages with fixed integer sizes (Java, C++), left + right can overflow if both are large. left + (right - left) / 2 computes the same midpoint without the overflow risk. Good to mention this in an interview even in JavaScript.',
+          },
+          {
+            question: 'You run binary search on a sorted array of 8 million elements. What is the maximum number of comparisons?',
+            options: ['4,000,000', '8,000,000', '23', '64'],
+            correctIndex: 2,
+            explanation:
+              'log₂(8,000,000) ≈ 23. Binary search only needs about 23 comparisons to search 8 million elements — that is the power of O(log n).',
+          },
+        ],
       },
     ],
   },
@@ -459,12 +489,42 @@ function merge(left: number[], right: number[]): number[] {
           'In an interview, always reach for the built-in sort first and state its complexity. Only implement from scratch if explicitly asked. Interviewers care more about how you use sorting to simplify a problem than whether you can write merge sort from memory.',
       },
       {
-        type: 'quiz',
-        question: 'What is the time complexity of Merge Sort in all cases?',
-        options: ['O(n)', 'O(n²)', 'O(n log n)', 'O(log n)'],
-        correctIndex: 2,
-        explanation:
-          'Merge Sort always divides the array in half (log n levels) and merges every element at each level (n work per level), giving O(n log n) in best, average, and worst case — unlike Quick Sort which can degrade to O(n²).',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What is the time complexity of Merge Sort in all cases?',
+            options: ['O(n)', 'O(n²)', 'O(n log n)', 'O(log n)'],
+            correctIndex: 2,
+            explanation:
+              'Merge Sort always divides the array in half (log n levels) and merges every element at each level (n work per level), giving O(n log n) in best, average, and worst case — unlike Quick Sort which can degrade to O(n²).',
+          },
+          {
+            question: 'What is Quick Sort\'s worst-case time complexity and when does it occur?',
+            options: [
+              'O(n log n) — always',
+              'O(n²) — when the pivot is always the smallest or largest element',
+              'O(n) — on already-sorted arrays',
+              'O(log n) — when the array is random',
+            ],
+            correctIndex: 1,
+            explanation:
+              'If the pivot chosen is always the min or max (e.g., picking the first element on a sorted array), every partition splits into 0 and n-1 elements — n levels of O(n) work each gives O(n²). Random or median-of-three pivot selection avoids this.',
+          },
+          {
+            question: 'Which sorting algorithm is typically the best choice for sorting a linked list?',
+            options: ['Quick Sort', 'Bubble Sort', 'Merge Sort', 'Heap Sort'],
+            correctIndex: 2,
+            explanation:
+              'Merge Sort only needs sequential access — it splits the list at the midpoint and merges. Quick Sort requires random access to pick a pivot efficiently, which linked lists don\'t support. Merge Sort also has guaranteed O(n log n) with O(log n) stack space on a linked list.',
+          },
+          {
+            question: 'You need to sort an array and then immediately run a two-pointer scan on it. What is the overall time complexity?',
+            options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)'],
+            correctIndex: 1,
+            explanation:
+              'Sorting is O(n log n) and the two-pointer scan is O(n). The total is O(n log n + n) = O(n log n) — the sort dominates.',
+          },
+        ],
       },
     ],
   },
@@ -518,12 +578,42 @@ function merge(left: number[], right: number[]): number[] {
           'The most common DFS mistake is forgetting to mark a node as visited before recursing, causing infinite loops on graphs with cycles. On trees you can skip the visited check since there are no cycles by definition.',
       },
       {
-        type: 'quiz',
-        question: 'Which algorithm guarantees the shortest path in an unweighted graph?',
-        options: ['DFS', 'BFS', 'Both equally', 'Neither'],
-        correctIndex: 1,
-        explanation:
-          'BFS explores nodes level by level, so the first time it reaches a node it has taken the fewest possible edges to get there. DFS may find a path but has no guarantee it is the shortest.',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'Which algorithm guarantees the shortest path in an unweighted graph?',
+            options: ['DFS', 'BFS', 'Both equally', 'Neither'],
+            correctIndex: 1,
+            explanation:
+              'BFS explores nodes level by level, so the first time it reaches a node it has taken the fewest possible edges to get there. DFS may find a path but has no guarantee it is the shortest.',
+          },
+          {
+            question: 'Which data structure does BFS use internally to track nodes to visit?',
+            options: ['Stack', 'Queue', 'HashMap', 'Priority Queue'],
+            correctIndex: 1,
+            explanation:
+              'BFS uses a queue (FIFO). Nodes are enqueued when discovered and dequeued when processed — this ensures you fully explore one level before moving to the next.',
+          },
+          {
+            question: 'Which data structure does iterative DFS use?',
+            options: ['Queue', 'Heap', 'Stack', 'Linked List'],
+            correctIndex: 2,
+            explanation:
+              'Iterative DFS replaces the call stack with an explicit stack (LIFO). You push neighbors onto the stack and pop one to process next — mimicking the depth-first order of recursion.',
+          },
+          {
+            question: 'When traversing a graph (not a tree), why must you track visited nodes?',
+            options: [
+              'To count the total number of nodes',
+              'To avoid processing the same node twice and getting stuck in infinite loops',
+              'To sort nodes by distance',
+              'To pick the shortest path automatically',
+            ],
+            correctIndex: 1,
+            explanation:
+              'Graphs can have cycles — a node can be reachable from multiple paths. Without a visited set, both DFS and BFS can revisit nodes forever. Trees have no cycles, so they don\'t need this check.',
+          },
+        ],
       },
     ],
   },
@@ -572,12 +662,47 @@ function merge(left: number[], right: number[]): number[] {
           'When a string problem feels like an array problem — it usually is one. Treat each character as an element, and reach for the same patterns: two pointers, sliding window, or frequency map. The main difference is that strings are immutable, so mutations require converting to an array first.',
       },
       {
-        type: 'quiz',
-        question: 'What is the time complexity of concatenating n strings together one by one using the + operator?',
-        options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(1)'],
-        correctIndex: 2,
-        explanation:
-          'Each + creates a new string and copies all existing characters. The first copy is 1 char, the second is 2, and so on — totalling 1 + 2 + ... + n = O(n²). The fix is to collect parts in an array and call .join("") once at the end.',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What is the time complexity of concatenating n strings together one by one using the + operator?',
+            options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(1)'],
+            correctIndex: 2,
+            explanation:
+              'Each + creates a new string and copies all existing characters. The first copy is 1 char, the second is 2, and so on — totalling 1 + 2 + ... + n = O(n²). The fix is to collect parts in an array and call .join("") once at the end.',
+          },
+          {
+            question: 'You want to check if two strings are anagrams of each other. Which approach is most efficient?',
+            options: [
+              'Compare every character in one string against every character in the other — O(n²)',
+              'Sort both strings and compare — O(n log n)',
+              'Build a character frequency map for each and compare — O(n)',
+              'Reverse one string and compare — O(n)',
+            ],
+            correctIndex: 2,
+            explanation:
+              'Counting character frequencies in each string takes O(n) and comparing two 26-entry arrays is O(1). This beats sorting (O(n log n)) and is correct — two strings are anagrams if and only if their character counts match.',
+          },
+          {
+            question: 'What technique finds the longest substring without repeating characters in O(n)?',
+            options: ['Two Pointers inward from both ends', 'Sliding Window with a HashSet', 'Sorting then scanning', 'Prefix Sum'],
+            correctIndex: 1,
+            explanation:
+              'A sliding window expands the right pointer until a duplicate is found, then shrinks from the left until the duplicate is removed. A HashSet tracks which characters are in the window. Each character is added and removed at most once — O(n) total.',
+          },
+          {
+            question: 'Strings in JavaScript are immutable. What does this mean practically?',
+            options: [
+              'You cannot read individual characters',
+              'String methods modify the original string in place',
+              'Every operation that changes a string creates a new one',
+              'Strings cannot be stored in arrays',
+            ],
+            correctIndex: 2,
+            explanation:
+              'Immutability means no method changes the original string — .toUpperCase(), .slice(), and .replace() all return new strings. This is why repeated concatenation with + is expensive: each + allocates a brand-new string.',
+          },
+        ],
       },
     ],
   },
@@ -628,17 +753,52 @@ function climbStairs(n: number): number {
           'Before writing any code, define dp[i] in plain English. If you cannot state clearly what dp[i] represents, you are not ready to code yet. A precise definition makes the recurrence relation and base cases obvious.',
       },
       {
-        type: 'quiz',
-        question: 'What does memoization mean in the context of dynamic programming?',
-        options: [
-          'Sorting subproblems before solving them',
-          'Caching the result of each subproblem so it is only computed once',
-          'Solving subproblems in reverse order',
-          'Dividing the problem into non-overlapping subproblems',
+        type: 'quiz-pool',
+        questions: [
+          {
+            question: 'What does memoization mean in the context of dynamic programming?',
+            options: [
+              'Sorting subproblems before solving them',
+              'Caching the result of each subproblem so it is only computed once',
+              'Solving subproblems in reverse order',
+              'Dividing the problem into non-overlapping subproblems',
+            ],
+            correctIndex: 1,
+            explanation:
+              'Memoization stores the result of each subproblem in a cache (usually a map or array). Before computing, you check the cache — if the answer is there, return it immediately. This turns exponential recursion into polynomial time.',
+          },
+          {
+            question: 'What two properties must a problem have for dynamic programming to apply?',
+            options: [
+              'Sorted input and unique values',
+              'Overlapping subproblems and optimal substructure',
+              'A greedy choice and a base case',
+              'A graph structure and weighted edges',
+            ],
+            correctIndex: 1,
+            explanation:
+              'Overlapping subproblems means the same sub-calculation recurs multiple times (so caching saves work). Optimal substructure means the best solution to the whole problem is built from best solutions to its subproblems.',
+          },
+          {
+            question: 'Bottom-up DP (tabulation) has an advantage over top-down DP (memoization). What is it?',
+            options: [
+              'It uses more memory',
+              'It is easier to read',
+              'It avoids recursion and call stack overhead',
+              'It works on unsorted data',
+            ],
+            correctIndex: 2,
+            explanation:
+              'Tabulation fills a table iteratively from the smallest subproblems up, with no recursive calls. This eliminates call stack risk (no stack overflow on large inputs) and removes function-call overhead, making it faster in practice.',
+          },
+          {
+            question: 'The naive recursive Fibonacci runs in O(2ⁿ). Adding memoization reduces it to what?',
+            options: ['O(n²)', 'O(n log n)', 'O(n)', 'O(log n)'],
+            correctIndex: 2,
+            explanation:
+              'With memoization, each unique value of n is computed exactly once and cached. There are only n distinct subproblems (fib(1) through fib(n)), so the total work drops from exponential to O(n).',
+          },
         ],
-        correctIndex: 1,
-        explanation:
-          'Memoization stores the result of each subproblem in a cache (usually a map or array). Before computing, you check the cache — if the answer is there, return it immediately. This turns exponential recursion into polynomial time.',
       },
     ],
   },
