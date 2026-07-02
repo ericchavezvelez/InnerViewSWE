@@ -39,6 +39,8 @@ const ALGORITHMS: Lesson[] = [
   { name: 'Graphs',               description: 'Vertices and edges representing relationships',    icon: '📊', available: false },
 ];
 
+const TOTAL_AVAILABLE = [...DATA_STRUCTURES, ...ALGORITHMS].filter((l) => l.available).length;
+
 export default function LessonsScreen() {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
@@ -93,6 +95,19 @@ export default function LessonsScreen() {
         <View style={styles.header}>
           <ThemedText type="title">Lessons</ThemedText>
           <ThemedText style={styles.subtitle}>Concepts to help you level up</ThemedText>
+          <View style={styles.progressRow}>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${Math.round((completed.size / TOTAL_AVAILABLE) * 100)}%` },
+                ]}
+              />
+            </View>
+            <ThemedText style={styles.progressLabel}>
+              {completed.size} / {TOTAL_AVAILABLE}
+            </ThemedText>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -173,6 +188,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#4caf50',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 4,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#e5e5ea',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0a7ea4',
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0a7ea4',
+    minWidth: 36,
+    textAlign: 'right',
   },
   comingSoon: {
     fontSize: 11,

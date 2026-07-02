@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,12 +11,16 @@ import { supabase } from '@/lib/supabase';
 import { type TopicStat, computeTopicStats, formatAccuracy } from '@/src/lib/progressUtils';
 import { type UserResponseRow } from '@/src/lib/types';
 
+const COMPLETED_KEY = '@innerview:completed_lessons';
+const TOTAL_LESSONS = 9;
+
 export default function ProgressScreen() {
   const [correctCount, setCorrectCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [bestTopics, setBestTopics] = useState<TopicStat[]>([]);
   const [worstTopics, setWorstTopics] = useState<TopicStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lessonsCompleted, setLessonsCompleted] = useState(0);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
@@ -28,6 +33,11 @@ export default function ProgressScreen() {
       setTotalCount(0);
       setBestTopics([]);
       setWorstTopics([]);
+
+      AsyncStorage.getItem(COMPLETED_KEY).then((raw) => {
+        setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
+      });
+
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.user.id) { setLoading(false); return; }
 
@@ -67,6 +77,24 @@ export default function ProgressScreen() {
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
         <ThemedText type="title">Progress</ThemedText>
+
+        {/* Lesson completion card */}
+        <View style={[styles.lessonCard, { backgroundColor: cardBackground }]}>
+          <View style={styles.lessonCardHeader}>
+            <ThemedText style={styles.lessonCardLabel}>Lessons Completed</ThemedText>
+            <ThemedText style={styles.lessonCardCount}>
+              {lessonsCompleted} / {TOTAL_LESSONS}
+            </ThemedText>
+          </View>
+          <View style={styles.lessonBarTrack}>
+            <View
+              style={[
+                styles.lessonBarFill,
+                { width: `${Math.round((lessonsCompleted / TOTAL_LESSONS) * 100)}%` },
+              ]}
+            />
+          </View>
+        </View>
 
         {/* Donut chart */}
         <View style={[styles.chartContainer, { backgroundColor: cardBackground }]}>
@@ -151,6 +179,37 @@ const styles = StyleSheet.create({
     paddingTop: 64,
     paddingBottom: 32,
     gap: 32,
+  },
+  lessonCard: {
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+  },
+  lessonCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lessonCardLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  lessonCardCount: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0a7ea4',
+  },
+  lessonBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#e5e5ea',
+    overflow: 'hidden',
+  },
+  lessonBarFill: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0a7ea4',
   },
   chartContainer: {
     alignItems: 'center',
