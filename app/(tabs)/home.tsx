@@ -151,6 +151,17 @@ export default function HomeScreen() {
           </View>
         )}
 
+        <TouchableOpacity
+          style={styles.playCard}
+          onPress={() => router.push('/(tabs)/play' as any)}>
+          <View style={styles.nudgeLeft}>
+            <ThemedText style={styles.playLabel}>Ready to Practice?</ThemedText>
+            <ThemedText style={styles.playName}>Play Now</ThemedText>
+            <ThemedText style={styles.playDescription}>Answer questions and build your streak</ThemedText>
+          </View>
+          <ThemedText style={styles.nudgeIcon}>🎮</ThemedText>
+        </TouchableOpacity>
+
         <View style={styles.grid}>
           {PROGRESS_CIRCLES.map((label) => (
             <View key={label} style={styles.circleItem}>
@@ -196,6 +207,31 @@ const styles = StyleSheet.create({
   streakText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  playCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    padding: 18,
+    gap: 12,
+    backgroundColor: '#0a7ea4',
+  },
+  playLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  playName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  playDescription: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.65)',
+    lineHeight: 18,
   },
   nudgeCard: {
     flexDirection: 'row',
