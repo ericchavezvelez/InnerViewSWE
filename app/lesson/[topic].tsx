@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -76,11 +76,16 @@ export default function LessonDetailScreen() {
   if (!lesson) {
     return (
       <ThemedView style={styles.container}>
+        <SafeAreaView>
+          <View style={styles.navBar}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.navBack}>
+              <ThemedText style={styles.navBackText}>‹</ThemedText>
+            </TouchableOpacity>
+            <ThemedText style={styles.navTitle} numberOfLines={1}>{topic}</ThemedText>
+            <View style={styles.navSpacer} />
+          </View>
+        </SafeAreaView>
         <ScrollView contentContainerStyle={styles.content}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ThemedText style={styles.backText}>‹ Lessons</ThemedText>
-          </TouchableOpacity>
-          <ThemedText type="title">{topic}</ThemedText>
           <View style={styles.placeholder}>
             <ThemedText style={styles.placeholderIcon}>🚧</ThemedText>
             <ThemedText style={styles.placeholderTitle}>Under Construction</ThemedText>
@@ -95,15 +100,17 @@ export default function LessonDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <ThemedText style={styles.backText}>‹ Lessons</ThemedText>
+      <SafeAreaView>
+        <View style={styles.navBar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.navBack}>
+            <ThemedText style={styles.navBackText}>‹</ThemedText>
           </TouchableOpacity>
-          <ThemedText type="title">{lesson.topic}</ThemedText>
-          <ThemedText style={styles.tagline}>{lesson.tagline}</ThemedText>
+          <ThemedText style={styles.navTitle} numberOfLines={1}>{lesson.topic}</ThemedText>
+          <View style={styles.navSpacer} />
         </View>
-
+      </SafeAreaView>
+      <ScrollView contentContainerStyle={styles.content}>
+        <ThemedText style={styles.tagline}>{lesson.tagline}</ThemedText>
         {lesson.sections.map(renderSection)}
       </ScrollView>
     </ThemedView>
@@ -189,15 +196,38 @@ function QuizPoolSection({ questions, topic }: { questions: QuizQuestion[]; topi
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#8e8e9333',
+  },
+  navBack: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navBackText: {
+    fontSize: 28,
+    color: '#0a7ea4',
+    lineHeight: 32,
+  },
+  navTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  navSpacer: { width: 44 },
   content: {
     paddingHorizontal: 24,
-    paddingTop: 64,
+    paddingTop: 24,
     paddingBottom: 48,
     gap: 24,
   },
-  header: { gap: 6 },
-  backButton: { marginBottom: 4 },
-  backText: { fontSize: 16, color: '#0a7ea4', fontWeight: '500' },
   tagline: { fontSize: 15, opacity: 0.5, lineHeight: 22 },
 
   intro: { fontSize: 15, lineHeight: 24, opacity: 0.8 },
