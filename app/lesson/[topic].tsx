@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform, SafeAreaView } from 'react-native';
+import { useState, useMemo, useRef } from 'react';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Platform, SafeAreaView, Animated } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -127,6 +127,10 @@ function QuizSection({ section, topic }: { section: QuizQuestion; topic: string 
   const defaultBackground = useThemeColor({ light: '#f2f2f7', dark: '#2c2c2e' }, 'background');
   const explanationBackground = useThemeColor({ light: '#f2f2f7', dark: '#2c2c2e' }, 'background');
 
+  // Animation values — one scale per option, one for the explanation card
+  const optionScales = useRef(section.options.map(() => new Animated.Value(1))).current;
+  const explanationAnim = useRef(new Animated.Value(0)).current;
+
   function getOptionBackground(index: number) {
     if (!answered) return defaultBackground;
     if (index === section.correctIndex) return correctBackground;
@@ -149,40 +153,64 @@ function QuizSection({ section, topic }: { section: QuizQuestion; topic: string 
     return undefined;
   }
 
+  function handleSelect(i: number) {
+    if (answered) return;
+    setSelected(i);
+    if (i === section.correctIndex) markComplete();
+
+    // Pulse the tapped option
+    Animated.sequence([
+      Animated.spring(optionScales[i], { toValue: 1.04, useNativeDriver: true, speed: 40, bounciness: 8 }),
+      Animated.spring(optionScales[i], { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 4 }),
+    ]).start();
+
+    // Slide + fade the explanation card in
+    Animated.spring(explanationAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 16,
+      bounciness: 6,
+    }).start();
+  }
+
   return (
     <View style={styles.quizCard}>
       <ThemedText style={styles.quizLabel}>Practice Question</ThemedText>
       <ThemedText style={styles.quizQuestion}>{section.question}</ThemedText>
       <View style={styles.quizOptions}>
         {section.options.map((option, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[
-              styles.quizOption,
-              { backgroundColor: getOptionBackground(i) },
-              getOptionBorder(i) ? { borderWidth: 2, borderColor: getOptionBorder(i) } : styles.quizOptionDefaultBorder,
-            ]}
-            onPress={() => {
-              if (!answered) {
-                setSelected(i);
-                if (i === section.correctIndex) markComplete();
-              }
-            }}
-            disabled={answered}>
-            <ThemedText style={styles.quizOptionLetter}>
-              {['A', 'B', 'C', 'D'][i]}
-            </ThemedText>
-            <ThemedText style={styles.quizOptionText}>{option}</ThemedText>
-          </TouchableOpacity>
+          <Animated.View key={i} style={{ transform: [{ scale: optionScales[i] }] }}>
+            <TouchableOpacity
+              style={[
+                styles.quizOption,
+                { backgroundColor: getOptionBackground(i) },
+                getOptionBorder(i) ? { borderWidth: 2, borderColor: getOptionBorder(i) } : styles.quizOptionDefaultBorder,
+              ]}
+              onPress={() => handleSelect(i)}
+              disabled={answered}>
+              <ThemedText style={styles.quizOptionLetter}>
+                {['A', 'B', 'C', 'D'][i]}
+              </ThemedText>
+              <ThemedText style={styles.quizOptionText}>{option}</ThemedText>
+            </TouchableOpacity>
+          </Animated.View>
         ))}
       </View>
       {answered && (
-        <View style={[styles.explanation, { backgroundColor: explanationBackground }]}>
+        <Animated.View
+          style={[
+            styles.explanation,
+            { backgroundColor: explanationBackground },
+            {
+              opacity: explanationAnim,
+              transform: [{ translateY: explanationAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+            },
+          ]}>
           <ThemedText style={styles.explanationLabel}>
             {selected === section.correctIndex ? '✓ Correct' : '✗ Incorrect'}
           </ThemedText>
           <ThemedText style={styles.explanationText}>{section.explanation}</ThemedText>
-        </View>
+        </Animated.View>
       )}
     </View>
   );
