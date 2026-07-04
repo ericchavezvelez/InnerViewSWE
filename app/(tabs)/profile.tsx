@@ -2,11 +2,15 @@ import { useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
+import { computeStreak } from '@/src/lib/homeUtils';
+
+const COMPLETED_KEY = '@innerview:completed_lessons';
 
 type RecentAnswer = { topic: string; is_correct: boolean; created_at: string };
 
@@ -15,40 +19,27 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [streak, setStreak] = useState(0);
   const [totalAnswered, setTotalAnswered] = useState(0);
+  const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [recentActivity, setRecentActivity] = useState<RecentAnswer[]>([]);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const rowBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
   const avatarBackground = useThemeColor({ light: '#0a7ea4', dark: '#0a7ea4' }, 'background');
 
-  // Counts consecutive days with at least one answer, ending today or yesterday
-  function computeStreak(createdAts: string[]): number {
-    if (createdAts.length === 0) return 0;
-    const uniqueDays = new Set(
-      createdAts.map((ts) => new Date(ts).toLocaleDateString('en-CA'))
-    );
-    const checkDate = new Date();
-    if (!uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    let count = 0;
-    while (uniqueDays.has(checkDate.toLocaleDateString('en-CA'))) {
-      count += 1;
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-    return count;
-  }
-
   // Fetches user profile and stats every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
+      AsyncStorage.getItem(COMPLETED_KEY).then((raw) => {
+        setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
+      });
+
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.user) return;
         setUsername(session.user.user_metadata?.username ?? '');
         setEmail(session.user.email ?? '');
 
         supabase
-          .from('user_answers')
+          .from('user_responses')
           .select('is_correct, created_at')
           .eq('user_id', session.user.id)
           .then(({ data }) => {
@@ -58,12 +49,21 @@ export default function ProfileScreen() {
           });
 
         supabase
-          .from('user_answers')
-          .select('topic, is_correct, created_at')
+          .from('user_responses')
+          .select('is_correct, created_at, topics(name)')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
           .limit(5)
-          .then(({ data }) => setRecentActivity(data ?? []));
+          .then(({ data }) => {
+            if (!data) return;
+            setRecentActivity(
+              data.map((r: any) => ({
+                topic: r.topics?.name ?? '—',
+                is_correct: r.is_correct,
+                created_at: r.created_at,
+              }))
+            );
+          });
       });
     }, [])
   );
@@ -113,6 +113,11 @@ export default function ProfileScreen() {
           <View style={styles.statItem}>
             <ThemedText style={styles.statValue}>{totalAnswered}</ThemedText>
             <ThemedText style={styles.statLabel}>Answered</ThemedText>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <ThemedText style={styles.statValue}>{lessonsCompleted}</ThemedText>
+            <ThemedText style={styles.statLabel}>Lessons</ThemedText>
           </View>
         </View>
 
