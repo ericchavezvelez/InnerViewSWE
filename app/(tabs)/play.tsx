@@ -334,11 +334,21 @@ export default function PlayScreen() {
           <View style={[styles.badge, difficultyStyles[question.difficulty].badge]}>
             <ThemedText style={difficultyStyles[question.difficulty].text}>{question.difficulty}</ThemedText>
           </View>
-          <View style={styles.progressBadge}>
-            <ThemedText style={styles.progressText}>
-              {currentIndex + 1} / {questions.length}
-            </ThemedText>
+        </View>
+
+        {/* Progress bar */}
+        <View style={styles.progressRow}>
+          <View style={styles.progressTrack}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${((currentIndex + 1) / questions.length) * 100}%` },
+              ]}
+            />
           </View>
+          <ThemedText style={styles.progressText}>
+            {currentIndex + 1} / {questions.length}
+          </ThemedText>
         </View>
 
         {/* Question */}
@@ -437,13 +447,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0a7ea4',
   },
-  progressBadge: {
-    marginLeft: 'auto',
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#e5e5ea',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0a7ea4',
   },
   progressText: {
     fontSize: 13,
     fontWeight: '600',
     opacity: 0.5,
+    minWidth: 36,
+    textAlign: 'right',
   },
   questionCard: {
     borderRadius: 20,
