@@ -390,10 +390,18 @@ export default function PlayScreen() {
           ))}
         </View>
 
-        {/* Explanation — shown after a wrong answer */}
-        {isAnswered && selectedIndex !== question.correctIndex && (
-          <View style={styles.explanationCard}>
-            <ThemedText style={styles.explanationLabel}>✦ Why?</ThemedText>
+        {/* Explanation — shown after any answer */}
+        {isAnswered && (
+          <View style={[
+            styles.explanationCard,
+            selectedIndex === question.correctIndex && styles.explanationCardCorrect,
+          ]}>
+            <ThemedText style={[
+              styles.explanationLabel,
+              selectedIndex === question.correctIndex && styles.explanationLabelCorrect,
+            ]}>
+              {selectedIndex === question.correctIndex ? '✓ Correct' : '✦ Why?'}
+            </ThemedText>
             <ThemedText style={styles.explanationText}>
               {question.explanation}
             </ThemedText>
@@ -698,11 +706,18 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: '#0a7ea408',
   },
+  explanationCardCorrect: {
+    borderColor: '#4caf5033',
+    backgroundColor: '#4caf5008',
+  },
   explanationLabel: {
     fontSize: 13,
     fontWeight: '700',
     color: '#0a7ea4',
     letterSpacing: 0.4,
+  },
+  explanationLabelCorrect: {
+    color: '#4caf50',
   },
   explanationText: {
     fontSize: 14,
