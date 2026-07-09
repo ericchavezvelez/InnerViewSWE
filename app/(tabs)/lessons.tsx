@@ -82,6 +82,16 @@ export default function LessonsScreen() {
           </View>
         </View>
 
+        {completed.size === 0 && (
+          <View style={styles.emptyNudge}>
+            <ThemedText style={styles.emptyNudgeIcon}>📋</ThemedText>
+            <ThemedText style={styles.emptyNudgeTitle}>Start with Arrays</ThemedText>
+            <ThemedText style={styles.emptyNudgeBody}>
+              Complete a lesson and answer the quiz correctly to earn your first checkmark.
+            </ThemedText>
+          </View>
+        )}
+
         <View style={styles.section}>
           <ThemedText type="subtitle">Data Structures</ThemedText>
           <View style={styles.topicList}>
@@ -185,6 +195,25 @@ const styles = StyleSheet.create({
     color: '#0a7ea4',
     minWidth: 36,
     textAlign: 'right',
+  },
+  emptyNudge: {
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  emptyNudgeIcon: {
+    fontSize: 36,
+  },
+  emptyNudgeTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  emptyNudgeBody: {
+    fontSize: 14,
+    opacity: 0.5,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   comingSoon: {
     fontSize: 11,
