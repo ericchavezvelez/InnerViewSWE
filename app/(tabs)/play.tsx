@@ -13,6 +13,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 import { type Question, type SupabaseRow, mapToQuestion } from '@/src/lib/questionUtils';
+import { computeStreak } from '@/src/lib/homeUtils';
 
 type WrongAnswer = {
   question: string;
@@ -55,6 +56,7 @@ export default function PlayScreen() {
   const [score, setScore] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([]);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const answerBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
@@ -66,14 +68,26 @@ export default function PlayScreen() {
     transform: [{ scale: celebrationScale.value }],
   }));
 
-  // Bounces the perfect score title when a flawless session ends
+  // Bounces the perfect score title and fetches the current streak when a session ends
   useEffect(() => {
-    if (sessionComplete && score === questions.length && questions.length > 0) {
+    if (!sessionComplete) return;
+
+    if (score === questions.length && questions.length > 0) {
       celebrationScale.value = withSequence(
         withTiming(0.8, { duration: 80 }),
         withSpring(1.15, { damping: 5, stiffness: 200 }),
         withSpring(1, { damping: 10 }),
       );
+    }
+
+    if (userId) {
+      supabase
+        .from('user_responses')
+        .select('created_at')
+        .eq('user_id', userId)
+        .then(({ data }) => {
+          if (data) setStreak(computeStreak(data.map((r) => r.created_at)));
+        });
     }
   }, [sessionComplete]);
 
@@ -293,6 +307,12 @@ export default function PlayScreen() {
               {Math.round((score / questions.length) * 100)}% Correct
             </ThemedText>
           </View>
+
+          {streak > 0 && (
+            <View style={styles.streakBadge}>
+              <ThemedText style={styles.streakText}>🔥 {streak} Day Streak</ThemedText>
+            </View>
+          )}
 
           {wrongAnswers.length > 0 && (
             <View style={styles.missedSection}>
@@ -554,6 +574,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     opacity: 0.5,
     fontWeight: '600',
+  },
+  streakBadge: {
+    backgroundColor: '#fff3e0',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  streakText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#e65100',
   },
   missedSection: {
     width: '100%',
