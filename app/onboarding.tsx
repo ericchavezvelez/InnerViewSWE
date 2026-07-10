@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
@@ -44,12 +44,23 @@ export default function OnboardingScreen() {
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
 
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
   // Fetches username from session on mount for the welcome message
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUsername(session?.user?.user_metadata?.username ?? '');
     });
-  });
+  }, []);
+
+  function advanceStep() {
+    Animated.sequence([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+    ]).start(() => {
+      setStep(2);
+      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    });
+  }
 
   // Saves selected level + completion flag to user metadata and navigates to tabs
   async function handleFinish() {
@@ -65,7 +76,7 @@ export default function OnboardingScreen() {
   if (step === 1) {
     return (
       <ThemedView style={styles.container}>
-        <View style={styles.content}>
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
           <View style={styles.stepIndicator}>
             <View style={[styles.dot, styles.dotActive]} />
             <View style={styles.dot} />
@@ -94,17 +105,17 @@ export default function OnboardingScreen() {
             ))}
           </View>
 
-          <TouchableOpacity style={styles.button} onPress={() => setStep(2)}>
+          <TouchableOpacity style={styles.button} onPress={advanceStep}>
             <ThemedText style={styles.buttonText}>Next →</ThemedText>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </ThemedView>
     );
   }
 
   return (
     <ThemedView style={styles.container}>
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <View style={styles.stepIndicator}>
           <View style={[styles.dot, styles.dotActive]} />
           <View style={[styles.dot, styles.dotActive]} />
@@ -156,7 +167,7 @@ export default function OnboardingScreen() {
             <ThemedText style={styles.buttonText}>Let's Go</ThemedText>
           )}
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </ThemedView>
   );
 }
