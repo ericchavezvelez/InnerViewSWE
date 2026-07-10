@@ -69,9 +69,17 @@ export default function PlayScreen() {
     transform: [{ scale: celebrationScale.value }],
   }));
 
+  const ringScale = useSharedValue(0);
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+    opacity: ringScale.value,
+  }));
+
   // Bounces the perfect score title and fetches the current streak when a session ends
   useEffect(() => {
     if (!sessionComplete) return;
+
+    ringScale.value = withSpring(1, { damping: 12, stiffness: 120 });
 
     if (score === questions.length && questions.length > 0) {
       celebrationScale.value = withSequence(
@@ -215,6 +223,7 @@ export default function PlayScreen() {
     setXpEarned(0);
     setWrongAnswers([]);
     setSessionComplete(false);
+    ringScale.value = 0;
   }
 
   // Returns to the size picker so the user can start a fresh session
@@ -302,14 +311,21 @@ export default function PlayScreen() {
             </ThemedText>
           </Animated.View>
 
-          <View style={styles.scoreCard}>
-            <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
-              {score} / {questions.length}
-            </ThemedText>
-            <ThemedText style={styles.scoreLabel}>
-              {Math.round((score / questions.length) * 100)}% Correct
-            </ThemedText>
-          </View>
+          <Animated.View style={[styles.scoreRingWrap, ringStyle]}>
+            <View style={[
+              styles.scoreRing,
+              { borderColor: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' },
+            ]}>
+              <View style={[styles.scoreRingInner, { backgroundColor: cardBackground }]} />
+              <ThemedText style={[styles.scoreNumber, { color: score / questions.length >= 0.6 ? '#4caf50' : '#f44336' }]}>
+                {score} / {questions.length}
+              </ThemedText>
+              <ThemedText style={styles.scorePercent}>
+                {Math.round((score / questions.length) * 100)}%
+              </ThemedText>
+            </View>
+            <ThemedText style={styles.scoreLabel}>Correct</ThemedText>
+          </Animated.View>
 
           <View style={styles.summaryBadgeRow}>
             {xpEarned > 0 && (
@@ -571,17 +587,36 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     gap: 28,
   },
-  scoreCard: {
+  scoreRingWrap: {
     alignItems: 'center',
-    gap: 8,
+    gap: 16,
+  },
+  scoreRing: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scoreRingInner: {
+    position: 'absolute',
+    width: 132,
+    height: 132,
+    borderRadius: 66,
   },
   scoreNumber: {
-    fontSize: 36,
+    fontSize: 22,
     fontWeight: '700',
-    lineHeight: 44,
+    lineHeight: 28,
+  },
+  scorePercent: {
+    fontSize: 13,
+    opacity: 0.5,
+    fontWeight: '500',
   },
   scoreLabel: {
-    fontSize: 16,
+    fontSize: 15,
     opacity: 0.5,
     fontWeight: '600',
   },
