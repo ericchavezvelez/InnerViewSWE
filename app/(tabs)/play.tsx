@@ -54,6 +54,7 @@ export default function PlayScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [score, setScore] = useState(0);
+  const [xpEarned, setXpEarned] = useState(0);
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswer[]>([]);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [streak, setStreak] = useState(0);
@@ -165,6 +166,7 @@ export default function PlayScreen() {
 
     if (isCorrect) {
       setScore((s) => s + 1);
+      setXpEarned((xp) => xp + question.xpReward);
     } else {
       setWrongAnswers((prev) => [
         ...prev,
@@ -210,6 +212,7 @@ export default function PlayScreen() {
     setCurrentIndex(0);
     setSelectedIndex(null);
     setScore(0);
+    setXpEarned(0);
     setWrongAnswers([]);
     setSessionComplete(false);
   }
@@ -308,11 +311,18 @@ export default function PlayScreen() {
             </ThemedText>
           </View>
 
-          {streak > 0 && (
-            <View style={styles.streakBadge}>
-              <ThemedText style={styles.streakText}>🔥 {streak} Day Streak</ThemedText>
-            </View>
-          )}
+          <View style={styles.summaryBadgeRow}>
+            {xpEarned > 0 && (
+              <View style={styles.xpBadge}>
+                <ThemedText style={styles.xpText}>+{xpEarned} XP</ThemedText>
+              </View>
+            )}
+            {streak > 0 && (
+              <View style={styles.streakBadge}>
+                <ThemedText style={styles.streakText}>🔥 {streak} Day Streak</ThemedText>
+              </View>
+            )}
+          </View>
 
           {wrongAnswers.length > 0 && (
             <View style={styles.missedSection}>
@@ -574,6 +584,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     opacity: 0.5,
     fontWeight: '600',
+  },
+  summaryBadgeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  xpBadge: {
+    backgroundColor: '#e8f4fd',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  xpText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0a7ea4',
   },
   streakBadge: {
     backgroundColor: '#fff3e0',
