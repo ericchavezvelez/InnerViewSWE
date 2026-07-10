@@ -19,16 +19,18 @@ export default function AllTopicsScreen() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session?.user.id) { setLoading(false); return; }
       supabase
-        .from('user_answers')
-        .select('topic, is_correct')
+        .from('user_responses')
+        .select('is_correct, topics(name)')
         .eq('user_id', session.user.id)
         .then(({ data }) => {
           if (data && data.length > 0) {
             const statsMap: Record<string, { correct: number; total: number }> = {};
-            for (const row of data) {
-              if (!statsMap[row.topic]) statsMap[row.topic] = { correct: 0, total: 0 };
-              statsMap[row.topic].total += 1;
-              if (row.is_correct) statsMap[row.topic].correct += 1;
+            for (const row of data as unknown as { is_correct: boolean; topics: { name: string } }[]) {
+              const topic = row.topics?.name;
+              if (!topic) continue;
+              if (!statsMap[topic]) statsMap[topic] = { correct: 0, total: 0 };
+              statsMap[topic].total += 1;
+              if (row.is_correct) statsMap[topic].correct += 1;
             }
             const sorted = Object.entries(statsMap)
               .map(([topic, s]) => ({ topic, ...s }))
@@ -56,6 +58,16 @@ export default function AllTopicsScreen() {
         </TouchableOpacity>
 
         <ThemedText type="title">All Topics</ThemedText>
+
+        {topics.length === 0 && (
+          <View style={styles.emptyState}>
+            <ThemedText style={styles.emptyIcon}>🎯</ThemedText>
+            <ThemedText style={styles.emptyTitle}>No data yet</ThemedText>
+            <ThemedText style={styles.emptyBody}>
+              Play some questions in the Play tab and your topic breakdown will appear here.
+            </ThemedText>
+          </View>
+        )}
 
         <View style={styles.topicList}>
           {topics.map((stat) => {
@@ -102,6 +114,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0a7ea4',
     fontWeight: '500',
+  },
+  emptyState: {
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    fontSize: 40,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  emptyBody: {
+    fontSize: 14,
+    opacity: 0.5,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   topicList: {
     gap: 8,
