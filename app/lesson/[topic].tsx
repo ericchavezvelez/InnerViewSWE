@@ -10,6 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { LESSONS, type Section, type QuizQuestion } from '@/src/data/lessons';
 import { pickRandomQuestion } from '@/src/lib/lessonUtils';
+import * as Haptics from 'expo-haptics';
 
 export default function LessonDetailScreen() {
   const { topic } = useLocalSearchParams<{ topic: string }>();
@@ -156,7 +157,12 @@ function QuizSection({ section, topic }: { section: QuizQuestion; topic: string 
   function handleSelect(i: number) {
     if (answered) return;
     setSelected(i);
-    if (i === section.correctIndex) markComplete();
+    if (i === section.correctIndex) {
+      markComplete();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
 
     // Pulse the tapped option
     Animated.sequence([

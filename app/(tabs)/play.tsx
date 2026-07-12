@@ -14,6 +14,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { supabase } from '@/lib/supabase';
 import { type Question, type SupabaseRow, mapToQuestion } from '@/src/lib/questionUtils';
 import { computeStreak } from '@/src/lib/homeUtils';
+import * as Haptics from 'expo-haptics';
 
 type WrongAnswer = {
   question: string;
@@ -175,7 +176,9 @@ export default function PlayScreen() {
     if (isCorrect) {
       setScore((s) => s + 1);
       setXpEarned((xp) => xp + question.xpReward);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setWrongAnswers((prev) => [
         ...prev,
         {
