@@ -11,6 +11,7 @@ type Answer = {
   id: string;
   is_correct: boolean;
   created_at: string;
+  topics: { name: string };
 };
 
 export default function TopicDetailScreen() {
@@ -25,13 +26,13 @@ export default function TopicDetailScreen() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session?.user.id) { setLoading(false); return; }
       supabase
-        .from('user_answers')
-        .select('id, is_correct, created_at')
+        .from('user_responses')
+        .select('id, is_correct, created_at, topics!inner(name)')
         .eq('user_id', session.user.id)
-        .eq('topic', name)
+        .eq('topics.name', name)
         .order('created_at', { ascending: false })
         .then(({ data }) => {
-          setAnswers(data ?? []);
+          setAnswers((data as unknown as Answer[]) ?? []);
           setLoading(false);
         });
     });
@@ -101,17 +102,23 @@ export default function TopicDetailScreen() {
         {/* Attempt history */}
         <View style={styles.section}>
           <ThemedText type="subtitle">History</ThemedText>
-          <View style={styles.historyList}>
-            {answers.map((a) => (
-              <View key={a.id} style={[styles.historyRow, { backgroundColor: rowBackground }]}>
-                <View style={[styles.resultDot, { backgroundColor: a.is_correct ? '#4caf50' : '#f44336' }]} />
-                <ThemedText style={styles.historyDate}>{formatDate(a.created_at)}</ThemedText>
-                <ThemedText style={[styles.historyResult, { color: a.is_correct ? '#4caf50' : '#f44336' }]}>
-                  {a.is_correct ? 'Correct' : 'Wrong'}
-                </ThemedText>
-              </View>
-            ))}
-          </View>
+          {answers.length === 0 ? (
+            <ThemedText style={styles.emptyText}>
+              No attempts yet. Head to the Play tab to answer {name} questions.
+            </ThemedText>
+          ) : (
+            <View style={styles.historyList}>
+              {answers.map((a) => (
+                <View key={a.id} style={[styles.historyRow, { backgroundColor: rowBackground }]}>
+                  <View style={[styles.resultDot, { backgroundColor: a.is_correct ? '#4caf50' : '#f44336' }]} />
+                  <ThemedText style={styles.historyDate}>{formatDate(a.created_at)}</ThemedText>
+                  <ThemedText style={[styles.historyResult, { color: a.is_correct ? '#4caf50' : '#f44336' }]}>
+                    {a.is_correct ? 'Correct' : 'Wrong'}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
     </ThemedView>
@@ -182,6 +189,12 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    opacity: 0.5,
+    fontStyle: 'italic',
+    lineHeight: 20,
   },
   historyList: {
     gap: 8,
