@@ -22,6 +22,9 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<
+    'username' | 'email' | 'password' | 'confirmPassword' | null
+  >(null);
 
   const inputBackground = useThemeColor({ light: '#f2f2f2', dark: '#2c2c2e' }, 'background');
   const inputColor = useThemeColor({}, 'text');
@@ -65,6 +68,14 @@ export default function SignUpScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.inner}>
+        <View style={styles.brand}>
+          <View style={styles.logoMark}>
+            <ThemedText style={styles.logoText}>IV</ThemedText>
+          </View>
+          <ThemedText style={styles.appName}>InnerViewSWE</ThemedText>
+          <ThemedText style={styles.appTagline}>SWE Interview Prep</ThemedText>
+        </View>
+
         <View style={styles.header}>
           <ThemedText type="title">Create account</ThemedText>
           <ThemedText style={styles.subtitle}>Sign up to get started</ThemedText>
@@ -72,16 +83,26 @@ export default function SignUpScreen() {
 
         <View style={styles.form}>
           <TextInput
-            style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
+            style={[
+              styles.input,
+              { backgroundColor: inputBackground, color: inputColor },
+              focusedField === 'username' && styles.inputFocused,
+            ]}
             placeholder="Username"
             placeholderTextColor={placeholderColor}
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
             autoCorrect={false}
+            onFocus={() => setFocusedField('username')}
+            onBlur={() => setFocusedField(null)}
           />
           <TextInput
-            style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
+            style={[
+              styles.input,
+              { backgroundColor: inputBackground, color: inputColor },
+              focusedField === 'email' && styles.inputFocused,
+            ]}
             placeholder="Email"
             placeholderTextColor={placeholderColor}
             value={email}
@@ -89,9 +110,15 @@ export default function SignUpScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
             autoCorrect={false}
+            onFocus={() => setFocusedField('email')}
+            onBlur={() => setFocusedField(null)}
           />
           <TextInput
-            style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
+            style={[
+              styles.input,
+              { backgroundColor: inputBackground, color: inputColor },
+              focusedField === 'password' && styles.inputFocused,
+            ]}
             placeholder="Password"
             placeholderTextColor={placeholderColor}
             value={password}
@@ -99,9 +126,15 @@ export default function SignUpScreen() {
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
+            onFocus={() => setFocusedField('password')}
+            onBlur={() => setFocusedField(null)}
           />
           <TextInput
-            style={[styles.input, { backgroundColor: inputBackground, color: inputColor }]}
+            style={[
+              styles.input,
+              { backgroundColor: inputBackground, color: inputColor },
+              focusedField === 'confirmPassword' && styles.inputFocused,
+            ]}
             placeholder="Confirm Password"
             placeholderTextColor={placeholderColor}
             value={confirmPassword}
@@ -109,6 +142,8 @@ export default function SignUpScreen() {
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
+            onFocus={() => setFocusedField('confirmPassword')}
+            onBlur={() => setFocusedField(null)}
           />
 
           {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
@@ -143,6 +178,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     gap: 32,
   },
+  brand: {
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  logoMark: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    backgroundColor: '#0a7ea4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  logoText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  appName: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  appTagline: {
+    fontSize: 13,
+    opacity: 0.4,
+    fontWeight: '500',
+  },
   header: {
     gap: 8,
   },
@@ -157,6 +221,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  inputFocused: {
+    borderColor: '#0a7ea4',
   },
   button: {
     backgroundColor: '#0a7ea4',
