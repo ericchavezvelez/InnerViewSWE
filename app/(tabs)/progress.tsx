@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,50 +20,56 @@ export default function ProgressScreen() {
   const [bestTopics, setBestTopics] = useState<TopicStat[]>([]);
   const [worstTopics, setWorstTopics] = useState<TopicStat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const topicBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
 
+  const loadStats = useCallback(async () => {
+    setCorrectCount(0);
+    setTotalCount(0);
+    setBestTopics([]);
+    setWorstTopics([]);
+
+    const raw = await AsyncStorage.getItem(COMPLETED_KEY);
+    setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user.id) return;
+
+    const { data } = await supabase
+      .from('user_responses')
+      .select('is_correct, topics(name)')
+      .eq('user_id', session.user.id);
+
+    if (data && data.length > 0) {
+      const rows = data as unknown as UserResponseRow[];
+      setCorrectCount(rows.filter((r) => r.is_correct).length);
+      setTotalCount(rows.length);
+
+      const topicRows = rows.map((r) => ({
+        is_correct: r.is_correct,
+        topic: r.topics.name,
+      }));
+      const { best, worst } = computeTopicStats(topicRows);
+      setBestTopics(best);
+      setWorstTopics(worst);
+    }
+  }, []);
+
   // Refetches and recomputes all stats every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      setCorrectCount(0);
-      setTotalCount(0);
-      setBestTopics([]);
-      setWorstTopics([]);
-
-      AsyncStorage.getItem(COMPLETED_KEY).then((raw) => {
-        setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
-      });
-
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session?.user.id) { setLoading(false); return; }
-
-        supabase
-          .from('user_responses')
-          .select('is_correct, topics(name)')
-          .eq('user_id', session.user.id)
-          .then(({ data }) => {
-            if (data && data.length > 0) {
-              const rows = data as unknown as UserResponseRow[];
-              setCorrectCount(rows.filter((r) => r.is_correct).length);
-              setTotalCount(rows.length);
-
-              const topicRows = rows.map((r) => ({
-                is_correct: r.is_correct,
-                topic: r.topics.name,
-              }));
-              const { best, worst } = computeTopicStats(topicRows);
-              setBestTopics(best);
-              setWorstTopics(worst);
-            }
-            setLoading(false);
-          });
-      });
-    }, [])
+      loadStats().finally(() => setLoading(false));
+    }, [loadStats])
   );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadStats().finally(() => setRefreshing(false));
+  }, [loadStats]);
 
   if (loading) {
     return (
@@ -75,7 +81,11 @@ export default function ProgressScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0a7ea4" />
+        }>
         <ThemedText type="title">Progress</ThemedText>
 
         {/* Lesson completion card */}
