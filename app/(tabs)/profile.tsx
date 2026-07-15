@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,52 +21,60 @@ export default function ProfileScreen() {
   const [totalAnswered, setTotalAnswered] = useState(0);
   const [lessonsCompleted, setLessonsCompleted] = useState(0);
   const [recentActivity, setRecentActivity] = useState<RecentAnswer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const cardBackground = useThemeColor({ light: '#f2f2f7', dark: '#1c1c1e' }, 'background');
   const rowBackground = useThemeColor({ light: '#ffffff', dark: '#2c2c2e' }, 'background');
   const avatarBackground = useThemeColor({ light: '#0a7ea4', dark: '#0a7ea4' }, 'background');
 
-  // Fetches user profile and stats every time the tab comes into focus
+  const loadProfile = useCallback(async () => {
+    const raw = await AsyncStorage.getItem(COMPLETED_KEY);
+    setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    setUsername(session.user.user_metadata?.username ?? '');
+    setEmail(session.user.email ?? '');
+
+    const [{ data: responses }, { data: recent }] = await Promise.all([
+      supabase.from('user_responses').select('is_correct, created_at').eq('user_id', session.user.id),
+      supabase
+        .from('user_responses')
+        .select('is_correct, created_at, topics(name)')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(5),
+    ]);
+
+    if (responses) {
+      setTotalAnswered(responses.length);
+      setStreak(computeStreak(responses.map((r) => r.created_at)));
+    }
+
+    if (recent) {
+      setRecentActivity(
+        recent.map((r: any) => ({
+          topic: r.topics?.name ?? '—',
+          is_correct: r.is_correct,
+          created_at: r.created_at,
+        }))
+      );
+    }
+  }, []);
+
+  // Refetches profile and stats every time the tab comes into focus
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(COMPLETED_KEY).then((raw) => {
-        setLessonsCompleted(raw ? JSON.parse(raw).length : 0);
-      });
-
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session?.user) return;
-        setUsername(session.user.user_metadata?.username ?? '');
-        setEmail(session.user.email ?? '');
-
-        supabase
-          .from('user_responses')
-          .select('is_correct, created_at')
-          .eq('user_id', session.user.id)
-          .then(({ data }) => {
-            if (!data) return;
-            setTotalAnswered(data.length);
-            setStreak(computeStreak(data.map((r) => r.created_at)));
-          });
-
-        supabase
-          .from('user_responses')
-          .select('is_correct, created_at, topics(name)')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-          .then(({ data }) => {
-            if (!data) return;
-            setRecentActivity(
-              data.map((r: any) => ({
-                topic: r.topics?.name ?? '—',
-                is_correct: r.is_correct,
-                created_at: r.created_at,
-              }))
-            );
-          });
-      });
-    }, [])
+      setLoading(true);
+      loadProfile().finally(() => setLoading(false));
+    }, [loadProfile])
   );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadProfile().finally(() => setRefreshing(false));
+  }, [loadProfile]);
 
   function handleSignOut() {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -98,9 +106,21 @@ export default function ProfileScreen() {
     return `${Math.floor(hours / 24)}d ago`;
   }
 
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <ActivityIndicator style={styles.spinner} size="large" color="#0a7ea4" />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0a7ea4" />
+        }>
         <ThemedText type="title">Profile</ThemedText>
 
         {/* Avatar + user info */}
@@ -157,6 +177,9 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  spinner: {
     flex: 1,
   },
   content: {
